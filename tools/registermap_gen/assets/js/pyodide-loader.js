@@ -1435,30 +1435,36 @@ begin
     
     # Add basic test for each register
     for reg in rmap:
-        addr_hex = f"0x{reg.address:04x}"
+        addr_hex = "0x{:04x}".format(reg.address)
         reset_val = getattr(reg, 'reset', 0)
-        reset_hex = f"0x{reset_val:08x}"
-        tb_content += f"""        -- Test register {reg.name} at address {addr_hex}
-        report "Testing {reg.name}...";
-        axi_read(x"{reg.address:04x}", read_data);
-        assert read_data = x"{reset_val:08x}"
-            report "{reg.name} reset value mismatch: expected {reset_hex}, got " & 
-                   integer'image(to_integer(unsigned(read_data)))
-            severity warning;
-        
-"""
+        reset_hex = "0x{:08x}".format(reset_val)
+        reg_name = reg.name
+        addr_code = "{:04x}".format(reg.address)
+        val_code = "{:08x}".format(reset_val)
+        test_code = "        -- Test register " + reg_name + " at address " + addr_hex + "\n"
+        test_code += "        report \"Testing " + reg_name + "...\";\n"
+        test_code += "        axi_read(x\"" + addr_code + "\", read_data);\n"
+        test_code += "        assert read_data = x\"" + val_code + "\"\n"
+        test_code += "            report \"" + reg_name + " reset value mismatch: expected " + reset_hex + ", got \" & \n"
+        test_code += "                   integer'image(to_integer(unsigned(read_data)))\n"
+        test_code += "            severity warning;\n"
+        test_code += "        \n"
+        tb_content += test_code
     
     # Add write test for writable registers
     for reg in rmap:
         has_writable = any('w' in bf.access.lower() for bf in reg.bitfields)
         if has_writable:
             test_value = 0xA5A5A5A5 & ((1 << data_width) - 1)
-            tb_content += f"""        -- Write test for {reg.name}
-        axi_write(x"{reg.address:04x}", x"{test_value:08x}");
-        axi_read(x"{reg.address:04x}", read_data);
-        report "{reg.name} write test completed";
-        
-"""
+            reg_name = reg.name
+            addr_code = "{:04x}".format(reg.address)
+            val_code = "{:08x}".format(test_value)
+            test_code = "        -- Write test for " + reg_name + "\n"
+            test_code += "        axi_write(x\"" + addr_code + "\", x\"" + val_code + "\");\n"
+            test_code += "        axi_read(x\"" + addr_code + "\", read_data);\n"
+            test_code += "        report \"" + reg_name + " write test completed\";\n"
+            test_code += "        \n"
+            tb_content += test_code
     
     tb_content += """        -- Test completion
         report "All tests completed";
