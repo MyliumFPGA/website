@@ -1139,14 +1139,16 @@ architecture behavioral of tb_regs is
         for bf in reg.bitfields:
             if 'w' in bf.access.lower() or bf.access.lower() in ['rw', 'wo', 'wosc']:
                 # Output signal for writable fields
-                signal_name = f"{reg.name.lower()}_{bf.name.lower()}_out"
-                tb_content += f"    signal {signal_name} : std_logic_vector({bf.width-1} downto 0) := (others => '0');\n"
-                port_mappings.append(f"            {signal_name} => {signal_name}")
+                signal_name = reg.name.lower() + '_' + bf.name.lower() + '_out'
+                width_bits = bf.width - 1
+                tb_content += "    signal " + signal_name + " : std_logic_vector(" + str(width_bits) + " downto 0) := (others => '0');\n"
+                port_mappings.append("            " + signal_name + " => " + signal_name)
             if 'r' in bf.access.lower() and hasattr(bf, 'hardware') and bf.hardware in ['i', 'ie']:
                 # Input signal for readable fields with hardware input
-                signal_name = f"{reg.name.lower()}_{bf.name.lower()}_in"
-                tb_content += f"    signal {signal_name} : std_logic_vector({bf.width-1} downto 0) := (others => '0');\n"
-                port_mappings.append(f"            {signal_name} => {signal_name}")
+                signal_name = reg.name.lower() + '_' + bf.name.lower() + '_in'
+                width_bits = bf.width - 1
+                tb_content += "    signal " + signal_name + " : std_logic_vector(" + str(width_bits) + " downto 0) := (others => '0');\n"
+                port_mappings.append("            " + signal_name + " => " + signal_name)
     
     tb_content += """
     -- Test control
