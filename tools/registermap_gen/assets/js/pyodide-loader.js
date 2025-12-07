@@ -366,6 +366,7 @@ function getCorsairWrapper() {
 import json
 import sys
 import os
+import re
 from io import StringIO
 import traceback
 
@@ -1095,7 +1096,7 @@ architecture behavioral of tb_regs is
     -- Clock and reset
     constant CLK_PERIOD : time := 10 ns;
     signal clk : std_logic := '0';
-    signal rst : std_logic := '1';
+    signal rst_n : std_logic := '0';
     
     -- Timeout configuration (in clock cycles)
     constant TIMEOUT_CYCLES : integer := 1000;
@@ -1107,8 +1108,7 @@ architecture behavioral of tb_regs is
     constant AXI_RESP_DECERR : std_logic_vector(1 downto 0) := "11";
     
     -- AXI-Lite signals
-    -- Note: This testbench uses active-high 'rst' signal; the DUT may use ARESETN (active-low).
-    -- IMPORTANT: If your DUT uses an active-low reset (e.g., ARESETN), you MUST manually modify the port mapping (e.g., aresetn => not rst).
+    -- Note: This testbench uses active-low 'rst_n' signal.
     -- All VALID signals initialized to '0' per AXI spec requirement
     signal axil_awaddr  : std_logic_vector(""" + addr_bits + """) := (others => '0');
     signal axil_awprot  : std_logic_vector(2 downto 0) := (others => '0');
@@ -1170,7 +1170,7 @@ begin
     dut: entity work.regs
         port map (
             clk => clk,
-            rst => rst,
+            rst_n => rst_n,
             -- AXI-Lite interface
             axil_awaddr  => axil_awaddr,
             axil_awprot  => axil_awprot,
@@ -1421,14 +1421,14 @@ begin
         -- VALID and READY signals are already initialized to '0' in their declarations
         -- so explicit assignments here are omitted.
         
-        -- Assert reset for sufficient time (minimum 1 clock cycle, using 16+ for safety)
-        rst <= '1';
+        -- Assert reset (active low)
+        rst_n <= '0';
         for i in 1 to 16 loop
             wait until rising_edge(clk);
         end loop;
         
         -- Deassert reset synchronously
-        rst <= '0';
+        rst_n <= '1';
         
         -- Wait a few cycles after reset before starting transactions
         for i in 1 to 4 loop
@@ -1565,9 +1565,9 @@ def generate_outputs(regs_json_content, options, base_address_str='0x00000000', 
             globcfg['base_address'] = base_address
             globcfg['data_width'] = 32
             globcfg['address_width'] = 16
-            globcfg['register_reset'] = 'sync_pos'
+            globcfg['register_reset'] = 'sync_neg'
             corsair_config.set_globcfg(globcfg)
-            print(f"[Python] Set global config: base_address={hex(base_address)}")
+            print(f"[Python] Set global config: base_address={hex(base_address)}, reset=sync_neg")
             
             # Generate outputs based on options
             from corsair import generators
@@ -1580,7 +1580,14 @@ def generate_outputs(regs_json_content, options, base_address_str='0x00000000', 
                     gen = generators.Vhdl(rmap, path='hw/regs.vhd', read_filler=read_filler, interface='axil')
                     gen.generate()
                     with open('hw/regs.vhd', 'r') as f:
-                        outputs['vhdl'] = f.read()
+                        vhdl_content = f.read()
+                    
+                    vhdl_content = re.sub(r'\\brst\\b', 'rst_n', vhdl_content)
+                    
+                    with open('hw/regs.vhd', 'w') as f:
+                        f.write(vhdl_content)
+                        
+                    outputs['vhdl'] = vhdl_content
                     print(f"[Python] ✓ VHDL module generated ({len(outputs['vhdl'])} chars)")
                 except Exception as e:
                     print(f"[Python] VHDL generation error: {e}")
