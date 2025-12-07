@@ -664,7 +664,7 @@ typedef struct __attribute__((packed)) {
             if gap > 0:
                 struct_access += f'    uint8_t _reserved_{prev_addr:#x}[{gap}];  /* Reserved/padding. */\\n'
         
-        struct_access += f'    {reg_type} {reg_name};  /* {reg_desc}. Offset: {hex(reg_addr)} */\\n'
+        struct_access += f'''    {reg_type} {reg_name};  /* {reg_desc}. Offset: {hex(reg_addr)} */\\n'''
         prev_addr = reg_addr + (data_width // 8)
     
     struct_access += '''} csr_regmap_t;
@@ -839,7 +839,7 @@ uint32_t status = regs->stat;
         reg_name = reg.name.lower()
         reg_desc = getattr(reg, 'description', f'{reg.name} register') or f'{reg.name} register'
         reg_addr = reg.address
-        docs += f'| \`{reg_name}\` | \`{reg_type}\` | \`{hex(reg_addr)}\` | {reg_desc} |\\n'
+        docs += f'''| \`{reg_name}\` | \`{reg_type}\` | \`{hex(reg_addr)}\` | {reg_desc} |\\n'''
     
     # Add usage examples
     docs += '''
@@ -1141,13 +1141,13 @@ architecture behavioral of tb_regs is
                 # Output signal for writable fields
                 signal_name = reg.name.lower() + '_' + bf.name.lower() + '_out'
                 width_bits = bf.width - 1
-                tb_content += "    signal " + signal_name + " : std_logic_vector(" + str(width_bits) + " downto 0) := (others => '0');\n"
+                tb_content += f"    signal {signal_name} : std_logic_vector({width_bits} downto 0) := (others => '0');\\n"
                 port_mappings.append("            " + signal_name + " => " + signal_name)
             if 'r' in bf.access.lower() and hasattr(bf, 'hardware') and bf.hardware in ['i', 'ie']:
                 # Input signal for readable fields with hardware input
                 signal_name = reg.name.lower() + '_' + bf.name.lower() + '_in'
                 width_bits = bf.width - 1
-                tb_content += "    signal " + signal_name + " : std_logic_vector(" + str(width_bits) + " downto 0) := (others => '0');\n"
+                tb_content += f"    signal {signal_name} : std_logic_vector({width_bits} downto 0) := (others => '0');\\n"
                 port_mappings.append("            " + signal_name + " => " + signal_name)
     
     tb_content += """
@@ -1188,8 +1188,8 @@ begin
     
     # Add register interface signals to port map
     if port_mappings:
-        tb_content += ",\n            -- Register interface signals\n"
-        tb_content += ",\n".join(port_mappings)
+        tb_content += ",\\n            -- Register interface signals\\n"
+        tb_content += ",\\n".join(port_mappings)
     
     tb_content += """
         );
@@ -1441,14 +1441,14 @@ begin
         reg_name = reg.name
         addr_code = "{:04x}".format(reg.address)
         val_code = "{:08x}".format(reset_val)
-        test_code = "        -- Test register " + reg_name + " at address " + addr_hex + "\n"
-        test_code += "        report \"Testing " + reg_name + "...\";\n"
-        test_code += "        axi_read(x\"" + addr_code + "\", read_data);\n"
-        test_code += "        assert read_data = x\"" + val_code + "\"\n"
-        test_code += "            report \"" + reg_name + " reset value mismatch: expected " + reset_hex + ", got \" & \n"
-        test_code += "                   integer'image(to_integer(unsigned(read_data)))\n"
-        test_code += "            severity warning;\n"
-        test_code += "        \n"
+        test_code = f'        -- Test register {reg_name} at address {addr_hex}\\n'
+        test_code += f'        report "Testing {reg_name}...";\\n'
+        test_code += f'        axi_read(x"{addr_code}", read_data);\\n'
+        test_code += f'        assert read_data = x"{val_code}"\\n'
+        test_code += f'            report "{reg_name} reset value mismatch: expected {reset_hex}, got " & \\n'
+        test_code += f'                   integer\\'image(to_integer(unsigned(read_data)))\\n'
+        test_code += f'            severity warning;\\n'
+        test_code += f'        \\n'
         tb_content += test_code
     
     # Add write test for writable registers
@@ -1459,11 +1459,11 @@ begin
             reg_name = reg.name
             addr_code = "{:04x}".format(reg.address)
             val_code = "{:08x}".format(test_value)
-            test_code = "        -- Write test for " + reg_name + "\n"
-            test_code += "        axi_write(x\"" + addr_code + "\", x\"" + val_code + "\");\n"
-            test_code += "        axi_read(x\"" + addr_code + "\", read_data);\n"
-            test_code += "        report \"" + reg_name + " write test completed\";\n"
-            test_code += "        \n"
+            test_code = f'        -- Write test for {reg_name}\\n'
+            test_code += f'        axi_write(x"{addr_code}", x"{val_code}");\\n'
+            test_code += f'        axi_read(x"{addr_code}", read_data);\\n'
+            test_code += f'        report "{reg_name} write test completed";\\n'
+            test_code += f'        \\n'
             tb_content += test_code
     
     tb_content += """        -- Test completion
