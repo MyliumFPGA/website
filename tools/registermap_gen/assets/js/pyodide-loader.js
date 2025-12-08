@@ -1584,10 +1584,10 @@ def generate_outputs(regs_json_content, options, base_address_str='0x00000000', 
                     
                     vhdl_content = re.sub(r'\\brst\\b', 'rst_n', vhdl_content)
                     
-                    # Fix BASE_ADDR generic to use ADDR_W instead of hardcoded width
+                    # Fix BASE_ADDR generic to use proper 32-bit width instead of hardcoded 16-bit
                     vhdl_content = re.sub(
                         r'BASE_ADDR\\s*:\\s*std_logic_vector\\(\\d+-1\\s+downto\\s+0\\)',
-                        'BASE_ADDR : std_logic_vector(ADDR_W-1 downto 0)',
+                        'BASE_ADDR : std_logic_vector(31 downto 0)',
                         vhdl_content
                     )
                     
