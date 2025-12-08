@@ -1432,11 +1432,11 @@ begin
     
     # Add basic test for each register
     for reg in rmap:
-        addr_hex = "0x{:04x}".format(reg.address)
+        addr_hex = "0x{:08x}".format(reg.address)
         reset_val = getattr(reg, 'reset', 0)
         reset_hex = "0x{:08x}".format(reset_val)
         reg_name = reg.name
-        addr_code = "{:04x}".format(reg.address)
+        addr_code = "{:08x}".format(reg.address)
         val_code = "{:08x}".format(reset_val)
         test_code = f'        -- Test register {reg_name} at address {addr_hex}\\n'
         test_code += f'        report "Testing {reg_name}...";\\n'
@@ -1454,7 +1454,7 @@ begin
         if has_writable:
             test_value = 0xA5A5A5A5 & ((1 << data_width) - 1)
             reg_name = reg.name
-            addr_code = "{:04x}".format(reg.address)
+            addr_code = "{:08x}".format(reg.address)
             val_code = "{:08x}".format(test_value)
             test_code = f'        -- Write test for {reg_name}\\n'
             test_code += f'        axi_write(x"{addr_code}", x"{val_code}");\\n'
