@@ -1063,7 +1063,7 @@ def generate_vhdl_testbench(rmap, output_path, read_filler=0):
     # Get configuration
     cfg = corsair_config.globcfg
     data_width = cfg.get('data_width', 32)
-    addr_width = cfg.get('address_width', 16)
+    addr_width = cfg.get('address_width', 32)
     
     # Calculate bit ranges
     addr_bits = f"{addr_width-1} downto 0"
@@ -1564,7 +1564,7 @@ def generate_outputs(regs_json_content, options, base_address_str='0x00000000', 
             globcfg = corsair_config.default_globcfg()
             globcfg['base_address'] = base_address
             globcfg['data_width'] = 32
-            globcfg['address_width'] = 16
+            globcfg['address_width'] = 32
             globcfg['register_reset'] = 'sync_neg'
             corsair_config.set_globcfg(globcfg)
             print(f"[Python] Set global config: base_address={hex(base_address)}, reset=sync_neg")
@@ -1583,6 +1583,13 @@ def generate_outputs(regs_json_content, options, base_address_str='0x00000000', 
                         vhdl_content = f.read()
                     
                     vhdl_content = re.sub(r'\\brst\\b', 'rst_n', vhdl_content)
+                    
+                    # Fix BASE_ADDR generic to use ADDR_W instead of hardcoded width
+                    vhdl_content = re.sub(
+                        r'BASE_ADDR\\s*:\\s*std_logic_vector\\(\\d+-1\\s+downto\\s+0\\)',
+                        'BASE_ADDR : std_logic_vector(ADDR_W-1 downto 0)',
+                        vhdl_content
+                    )
                     
                     with open('hw/regs.vhd', 'w') as f:
                         f.write(vhdl_content)
