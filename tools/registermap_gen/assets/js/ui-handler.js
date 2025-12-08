@@ -50,6 +50,16 @@ class UIHandler {
         const browseButton = document.getElementById('browse-button');
         // Removed csrconfig event listeners and logic
 
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        }
+
+        if (browseButton) {
+            browseButton.addEventListener('click', (e) => {
+                if (fileInput) fileInput.click();
+            });
+        }
+
         if (dropZone) {
             // Allow clicking the drop-area to open file browser as well
             dropZone.addEventListener('click', (e) => {
