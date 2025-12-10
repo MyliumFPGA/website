@@ -56,6 +56,7 @@ class UIHandler {
 
         if (browseButton) {
             browseButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event from bubbling to drop-zone
                 if (fileInput) fileInput.click();
             });
         }
@@ -63,6 +64,10 @@ class UIHandler {
         if (dropZone) {
             // Allow clicking the drop-area to open file browser as well
             dropZone.addEventListener('click', (e) => {
+                // Don't trigger if click came from browse button or file input itself
+                if (e.target === browseButton || browseButton.contains(e.target) || e.target === fileInput) {
+                    return;
+                }
                 if (fileInput) fileInput.click();
             });
 
