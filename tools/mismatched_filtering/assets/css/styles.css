@@ -1,0 +1,248 @@
+:root {
+    --mdc-theme-primary: #3F51B5;
+    --mdc-theme-secondary: #E91E63;
+    --mdc-theme-background: #FAFAFA;
+    --mdc-theme-surface: #FFFFFF;
+    --mdc-theme-on-primary: #FFFFFF;
+    --mdc-theme-on-secondary: #FFFFFF;
+    --mdc-theme-on-surface: #000000;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--mdc-theme-background);
+    color: var(--mdc-theme-on-surface);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.mdc-card {
+    margin-bottom: 24px;
+    background-color: var(--mdc-theme-surface);
+    box-shadow: var(--card-shadow);
+    border-radius: 8px;
+}
+
+.mdc-card__content {
+    padding: 24px;
+}
+
+.hero-card {
+    background: linear-gradient(135deg, var(--mdc-theme-primary) 0%, #5C6BC0 100%);
+    color: white;
+}
+
+.hero-card h1 {
+    color: white;
+    margin-top: 0;
+}
+
+.hero-card p {
+    color: white;
+    opacity: 0.95;
+}
+
+.mdc-top-app-bar {
+    background-color: var(--mdc-theme-primary);
+    color: var(--mdc-theme-on-primary);
+}
+
+.loading-container {
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.loading-container p {
+    margin-top: 16px;
+    color: #666;
+}
+
+/* Example tabs */
+.example-tabs {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.example-tab {
+    flex: 1;
+    min-width: 200px;
+}
+
+.example-tab.active {
+    background-color: var(--mdc-theme-primary);
+    color: white;
+}
+
+.example-container {
+    display: none;
+}
+
+.example-container.active {
+    display: block;
+}
+
+/* Control groups */
+.control-group {
+    margin: 24px 0;
+}
+
+.param-group {
+    margin: 16px 0;
+    padding: 16px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.window-type-btn.active {
+    background-color: var(--mdc-theme-primary);
+    color: white;
+}
+
+/* Sliders */
+.mdc-slider {
+    width: 100%;
+    margin: 8px 0;
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+    margin: 12px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--mdc-theme-primary);
+    cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--mdc-theme-primary);
+    cursor: pointer;
+    border: none;
+}
+
+/* Select */
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    font-family: 'Roboto', sans-serif;
+    margin-top: 8px;
+}
+
+/* Checkbox */
+.mdc-form-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* Plot containers */
+#plot-container-1,
+#plot-container-2 {
+    width: 100%;
+    height: 400px;
+    margin: 16px 0;
+    background-color: white;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Stats table */
+#stats-table {
+    margin-top: 24px;
+}
+
+#stats-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#stats-table th,
+#stats-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#stats-table th {
+    background-color: #f5f5f5;
+    font-weight: 500;
+}
+
+/* Attribution footer */
+.attribution-footer {
+    background-color: #f5f5f5;
+    padding: 24px;
+    text-align: center;
+    margin-top: 48px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.attribution-footer a {
+    color: var(--mdc-theme-primary);
+    text-decoration: none;
+}
+
+.attribution-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .example-tabs {
+        flex-direction: column;
+    }
+    
+    .example-tab {
+        width: 100%;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .window-type-btn {
+        width: 100%;
+    }
+}

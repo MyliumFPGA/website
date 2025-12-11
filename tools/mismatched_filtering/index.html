@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mismatched Filtering Workshop | mylium.eu</title>
+    
+    <!-- Material Design CSS -->
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9GBTGG0QQR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-9GBTGG0QQR');
+    </script>
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="mdc-top-app-bar">
+        <div class="mdc-top-app-bar__row">
+            <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+                <a href="https://www.mylium.eu" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
+                    <span class="mdc-top-app-bar__title">MYLIUM</span>
+                </a>
+                <span id="tool-version" style="margin-left:16px;font-size:12px;color:rgba(255,255,255,0.7);"></span>
+            </section>
+        </div>
+    </header>
+
+    <main class="mdc-top-app-bar--fixed-adjust">
+        <div class="container">
+            <!-- Hero Section -->
+            <div class="mdc-card hero-card">
+                <div class="mdc-card__content">
+                    <h1 class="mdc-typography--headline4">📡 Mismatched Filtering Workshop</h1>
+                    <p class="mdc-typography--body1">Interactive Python examples demonstrating spectrum windowing and least squares techniques for radar sidelobe reduction. Based on the MATLAB workshop by SpenceraM.</p>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading-pyodide" class="loading-container">
+                <div class="mdc-linear-progress mdc-linear-progress--indeterminate">
+                    <div class="mdc-linear-progress__buffer">
+                        <div class="mdc-linear-progress__buffer-bar"></div>
+                        <div class="mdc-linear-progress__buffer-dots"></div>
+                    </div>
+                    <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+                        <span class="mdc-linear-progress__bar-inner"></span>
+                    </div>
+                    <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+                        <span class="mdc-linear-progress__bar-inner"></span>
+                    </div>
+                </div>
+                <p class="mdc-typography--body2">Loading Python environment and libraries... This may take a moment on first visit.</p>
+            </div>
+
+            <div id="main-content" style="display: none;">
+                <!-- Example Selector -->
+                <div class="mdc-card">
+                    <div class="mdc-card__content">
+                        <h2 class="mdc-typography--headline6">Select Example</h2>
+                        <div class="example-tabs">
+                            <button class="mdc-button mdc-button--raised example-tab active" data-example="analyzing-windows">
+                                <span class="mdc-button__ripple"></span>
+                                <span class="mdc-button__label">Analyzing Windows</span>
+                            </button>
+                            <button class="mdc-button mdc-button--outlined example-tab" data-example="matched-filtering">
+                                <span class="mdc-button__ripple"></span>
+                                <span class="mdc-button__label">Matched Filtering</span>
+                            </button>
+                            <button class="mdc-button mdc-button--outlined example-tab" data-example="mismatched-filter-length">
+                                <span class="mdc-button__ripple"></span>
+                                <span class="mdc-button__label">Mismatched Filter Length</span>
+                            </button>
+                            <button class="mdc-button mdc-button--outlined example-tab" data-example="mismatched-filter-spoiling">
+                                <span class="mdc-button__ripple"></span>
+                                <span class="mdc-button__label">Mismatched Filter Spoiling</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analyzing Windows Example -->
+                <div id="example-analyzing-windows" class="example-container active">
+                    <div class="mdc-card">
+                        <div class="mdc-card__content">
+                            <h2 class="mdc-typography--headline6">Analyzing Windows from a Radar Perspective</h2>
+                            <p class="mdc-typography--body2">Explore how different window functions affect radar sidelobe levels and range resolution.</p>
+                            
+                            <!-- Window Type Selection -->
+                            <div class="control-group">
+                                <label class="mdc-typography--subtitle1">Window Type</label>
+                                <div class="button-group">
+                                    <button class="mdc-button mdc-button--raised window-type-btn active" data-window="kaiser">
+                                        <span class="mdc-button__ripple"></span>
+                                        <span class="mdc-button__label">Kaiser</span>
+                                    </button>
+                                    <button class="mdc-button mdc-button--outlined window-type-btn" data-window="taylor">
+                                        <span class="mdc-button__ripple"></span>
+                                        <span class="mdc-button__label">Taylor</span>
+                                    </button>
+                                    <button class="mdc-button mdc-button--outlined window-type-btn" data-window="chebyshev">
+                                        <span class="mdc-button__ripple"></span>
+                                        <span class="mdc-button__label">Chebyshev</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Kaiser Parameters -->
+                            <div id="kaiser-params" class="param-group">
+                                <label class="mdc-typography--subtitle2">Kaiser Beta: <span id="kaiser-beta-value">6</span></label>
+                                <input type="range" id="kaiser-beta" class="mdc-slider" min="0" max="22" value="6" step="1">
+                            </div>
+
+                            <!-- Taylor Parameters -->
+                            <div id="taylor-params" class="param-group" style="display:none;">
+                                <label class="mdc-typography--subtitle2">Sidelobe Level (dB): <span id="taylor-sll-value">-20</span></label>
+                                <input type="range" id="taylor-sll" class="mdc-slider" min="-70" max="-5" value="-20" step="1">
+                                <label class="mdc-typography--subtitle2">N-bar: <span id="taylor-nbar-value">14</span></label>
+                                <input type="range" id="taylor-nbar" class="mdc-slider" min="1" max="30" value="14" step="1">
+                            </div>
+
+                            <!-- Chebyshev Parameters -->
+                            <div id="chebyshev-params" class="param-group" style="display:none;">
+                                <label class="mdc-typography--subtitle2">Sidelobe Level (dB): <span id="cheby-sll-value">-30</span></label>
+                                <input type="range" id="cheby-sll" class="mdc-slider" min="-70" max="-5" value="-30" step="1">
+                            </div>
+
+                            <!-- Zoom Control -->
+                            <div class="control-group">
+                                <label class="mdc-typography--subtitle2">Plot Range (m): <span id="plot-range-value">12000</span></label>
+                                <select id="plot-range" class="mdc-select__native-control">
+                                    <option value="1000">1000</option>
+                                    <option value="1500">1500</option>
+                                    <option value="2000">2000</option>
+                                    <option value="3000">3000</option>
+                                    <option value="5000">5000</option>
+                                    <option value="7000">7000</option>
+                                    <option value="12000" selected>12000</option>
+                                </select>
+                            </div>
+
+                            <!-- Doppler Controls -->
+                            <div class="control-group">
+                                <label class="mdc-typography--subtitle2">Frequency Offset (Hz): <span id="freq-offset-value">90000</span></label>
+                                <input type="range" id="freq-offset" class="mdc-slider" min="0" max="200000" value="90000" step="10000">
+                                <label class="mdc-form-field">
+                                    <input type="checkbox" id="window-flag" checked>
+                                    <span>Apply Window to Doppler</span>
+                                </label>
+                            </div>
+
+                            <button class="mdc-button mdc-button--raised" id="run-analyzing-windows">
+                                <span class="mdc-button__ripple"></span>
+                                <i class="material-icons mdc-button__icon">play_arrow</i>
+                                <span class="mdc-button__label">Run Analysis</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div class="mdc-card" id="results-analyzing-windows" style="display:none;">
+                        <div class="mdc-card__content">
+                            <h3 class="mdc-typography--headline6">Results</h3>
+                            <div id="plot-container-1"></div>
+                            <div id="plot-container-2"></div>
+                            <div id="stats-table"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Matched Filtering Example -->
+                <div id="example-matched-filtering" class="example-container" style="display:none;">
+                    <div class="mdc-card">
+                        <div class="mdc-card__content">
+                            <h2 class="mdc-typography--headline6">Matched Filtering</h2>
+                            <p class="mdc-typography--body2">Coming soon - Demonstrates matched filtering concepts for radar signal processing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mismatched Filter Length Example -->
+                <div id="example-mismatched-filter-length" class="example-container" style="display:none;">
+                    <div class="mdc-card">
+                        <div class="mdc-card__content">
+                            <h2 class="mdc-typography--headline6">Mismatched Filter Length with Least Squares</h2>
+                            <p class="mdc-typography--body2">Coming soon - Explores how filter length affects sidelobe reduction.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mismatched Filter Spoiling Example -->
+                <div id="example-mismatched-filter-spoiling" class="example-container" style="display:none;">
+                    <div class="mdc-card">
+                        <div class="mdc-card__content">
+                            <h2 class="mdc-typography--headline6">Mismatched Filter Spoiling with Least Squares</h2>
+                            <p class="mdc-typography--body2">Coming soon - Demonstrates spoiling techniques for improved sidelobe suppression.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attribution Footer -->
+        <footer class="attribution-footer">
+            <div class="attribution-content">
+                <p class="mdc-typography--body2">
+                    Based on <a href="https://github.com/SpenceraM/MismatchedFilteringWorkshop" target="_blank" rel="noopener noreferrer">Mismatched Filtering Workshop</a> 
+                    by <a href="https://github.com/SpenceraM" target="_blank" rel="noopener noreferrer">SpenceraM</a> 
+                    | Python implementation for educational purposes
+                </p>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Snackbar for notifications -->
+    <div class="mdc-snackbar">
+        <div class="mdc-snackbar__surface">
+            <div class="mdc-snackbar__label"></div>
+            <div class="mdc-snackbar__actions">
+                <button type="button" class="mdc-icon-button mdc-snackbar__dismiss material-icons">close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <script src="assets/js/pyodide-loader.js"></script>
+    <script src="assets/js/ui-handler.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
