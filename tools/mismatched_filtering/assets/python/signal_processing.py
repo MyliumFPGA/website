@@ -244,7 +244,7 @@ def run_analyzing_windows_example(window_type='Kaiser', kaiser_beta=6,
         dict with results including plots and statistics
     """
     # Define waveform parameters
-    pulse_width = 5 / 1e4  # 50 microseconds
+    pulse_width = 50 / 1e6  # 50 microseconds
     sample_rate = 1e6
     sweep_bandwidth = 1e6
     prf = 1e3
