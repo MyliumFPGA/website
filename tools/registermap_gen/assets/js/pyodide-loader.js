@@ -1041,7 +1041,7 @@ def create_regmap_from_regs_file(path):
             raise
 
 
-def generate_vhdl_testbench(rmap, output_path, read_filler=0):
+def generate_vhdl_testbench(rmap, output_path, read_filler=0, base_address=0):
     """Generate an AXI-Lite compliant VHDL testbench for the register map.
     
     This testbench follows proper AXI-Lite protocol requirements:
@@ -1057,6 +1057,7 @@ def generate_vhdl_testbench(rmap, output_path, read_filler=0):
         rmap: RegisterMap object
         output_path: Path to write the testbench file
         read_filler: Read filler value for undefined addresses
+        base_address: Base address of the register map
     """
     from corsair import config as corsair_config
     
@@ -1152,6 +1153,9 @@ architecture behavioral of tb_regs is
     signal test_done : boolean := false;
     signal errors : integer := 0;
     
+    -- Base address constant
+    constant BASE_ADDRESS : std_logic_vector(31 downto 0) := """ + f"x\"{base_address:08x}\"" + """;
+    
 begin
     
     -- Clock generation
@@ -1159,6 +1163,9 @@ begin
     
     -- DUT instantiation
     dut: entity work.regs
+        generic map (
+            BASE_ADDR => BASE_ADDRESS
+        )
         port map (
             clk => clk,
             rst_n => rst_n,
@@ -1657,7 +1664,7 @@ def generate_outputs(regs_json_content, options, base_address_str='0x00000000', 
             if options.get('vhdl', True):
                 try:
                     print("[Python] Generating VHDL testbench...")
-                    generate_vhdl_testbench(rmap, 'hw/tb_regs.vhd', read_filler)
+                    generate_vhdl_testbench(rmap, 'hw/tb_regs.vhd', read_filler, base_address)
                     print("[Python] ✓ VHDL testbench generated")
                 except Exception as e:
                     print(f"[Python] VHDL testbench generation error: {e}")
