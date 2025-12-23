@@ -124,6 +124,23 @@ void example(void) {
 }
 ```
 
+## VHDL Post-Processing
+
+The tool automatically applies several post-processing steps to the generated VHDL:
+
+1. **Reset Signal Naming**: Changes `rst` to `rst_n` for active-low reset convention
+2. **BASE_ADDR Generic Width**: Ensures BASE_ADDR generic uses 32-bit width
+3. **Address Range Checking**: If `addr_in_range_w` and `addr_in_range_r` signals are declared but not assigned, the tool automatically adds address range checking logic:
+   ```vhdl
+   -- Address range checking (valid register addresses: BASE_ADDR + 0x0 to BASE_ADDR + 0xMAX)
+   addr_in_range_w <= '1' when (unsigned(waddr_absolute) >= unsigned(BASE_ADDR) and 
+                                 unsigned(waddr_absolute) <= unsigned(BASE_ADDR) + to_unsigned(MAX_OFFSET, ADDR_W)) else '0';
+   addr_in_range_r <= '1' when (unsigned(raddr_absolute) >= unsigned(BASE_ADDR) and 
+                                 unsigned(raddr_absolute) <= unsigned(BASE_ADDR) + to_unsigned(MAX_OFFSET, ADDR_W)) else '0';
+   ```
+   
+   The maximum offset is calculated automatically based on the highest register address in the map (highest_address + 3).
+
 ## Links
 
 - [Corsair Documentation](https://corsair.readthedocs.io)
