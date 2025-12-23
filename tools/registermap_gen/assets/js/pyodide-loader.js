@@ -1598,34 +1598,44 @@ def generate_outputs(regs_json_content, options, base_address_str='0x00000000', 
                         max_addr_offset = max(reg.address for reg in rmap) + 3
                     
                     # Check if addr_in_range_w and addr_in_range_r signals exist but are not assigned
-                    has_addr_in_range_w = 'signal addr_in_range_w' in vhdl_content or 'addr_in_range_w :' in vhdl_content
-                    has_addr_in_range_r = 'signal addr_in_range_r' in vhdl_content or 'addr_in_range_r :' in vhdl_content
+                    # Use regex to properly detect signal declarations
+                    has_addr_in_range_w = re.search(r'signal\\s+addr_in_range_w\\s*:', vhdl_content, re.IGNORECASE) is not None
+                    has_addr_in_range_r = re.search(r'signal\\s+addr_in_range_r\\s*:', vhdl_content, re.IGNORECASE) is not None
                     
                     # Check if they are already assigned (look for <=)
-                    addr_in_range_w_assigned = 'addr_in_range_w <=' in vhdl_content
-                    addr_in_range_r_assigned = 'addr_in_range_r <=' in vhdl_content
+                    addr_in_range_w_assigned = re.search(r'addr_in_range_w\\s*<=', vhdl_content, re.IGNORECASE) is not None
+                    addr_in_range_r_assigned = re.search(r'addr_in_range_r\\s*<=', vhdl_content, re.IGNORECASE) is not None
                     
-                    if (has_addr_in_range_w and not addr_in_range_w_assigned) or (has_addr_in_range_r and not addr_in_range_r_assigned):
+                    # Build the address check logic for signals that need it
+                    need_addr_check = False
+                    addr_check_logic = ''
+                    
+                    if has_addr_in_range_w and not addr_in_range_w_assigned:
+                        need_addr_check = True
+                        addr_check_logic += f'''    addr_in_range_w <= '1' when (unsigned(waddr_absolute) >= unsigned(BASE_ADDR) and 
+                                  unsigned(waddr_absolute) <= unsigned(BASE_ADDR) + to_unsigned({max_addr_offset}, ADDR_W)) else '0';
+'''
+                    
+                    if has_addr_in_range_r and not addr_in_range_r_assigned:
+                        need_addr_check = True
+                        addr_check_logic += f'''    addr_in_range_r <= '1' when (unsigned(raddr_absolute) >= unsigned(BASE_ADDR) and 
+                                  unsigned(raddr_absolute) <= unsigned(BASE_ADDR) + to_unsigned({max_addr_offset}, ADDR_W)) else '0';
+'''
+                    
+                    if need_addr_check:
                         # Find where to insert the address range checking logic
-                        # Look for the architecture begin or after signal declarations
-                        
-                        # First, try to find a good insertion point after signal declarations
-                        # Look for patterns like "begin" in the architecture
+                        # Look for the architecture begin statement
                         architecture_begin_match = re.search(r'(architecture\\s+\\w+\\s+of\\s+\\w+\\s+is.*?)(begin)', vhdl_content, re.DOTALL | re.IGNORECASE)
                         
                         if architecture_begin_match:
                             # Insert address range checking logic right after "begin"
-                            addr_check_logic = f'''
+                            full_logic = f'''
     -- Address range checking (valid register addresses: BASE_ADDR + 0x0 to BASE_ADDR + 0x{max_addr_offset:X})
-    addr_in_range_w <= '1' when (unsigned(waddr_absolute) >= unsigned(BASE_ADDR) and 
-                                  unsigned(waddr_absolute) <= unsigned(BASE_ADDR) + to_unsigned({max_addr_offset}, ADDR_W)) else '0';
-    addr_in_range_r <= '1' when (unsigned(raddr_absolute) >= unsigned(BASE_ADDR) and 
-                                  unsigned(raddr_absolute) <= unsigned(BASE_ADDR) + to_unsigned({max_addr_offset}, ADDR_W)) else '0';
-    
+{addr_check_logic}
 '''
                             # Find the position right after "begin"
                             insert_pos = architecture_begin_match.end()
-                            vhdl_content = vhdl_content[:insert_pos] + addr_check_logic + vhdl_content[insert_pos:]
+                            vhdl_content = vhdl_content[:insert_pos] + full_logic + vhdl_content[insert_pos:]
                             print(f"[Python] Added address range checking for addresses up to offset 0x{max_addr_offset:X}")
                     
                     with open('hw/regs.vhd', 'w') as f:
