@@ -123,7 +123,7 @@ r = a + b·θ
 Where:
 - `r` is the radius at angle θ
 - `a` is the starting radius (inner radius)
-- `b` is the growth rate (constant - linear growth)
+- `b` is the growth rate constant (produces linear radial growth)
 - `θ` is the angle in radians
 
 **Characteristics**:
