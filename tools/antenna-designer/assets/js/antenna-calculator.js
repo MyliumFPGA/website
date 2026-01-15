@@ -27,10 +27,11 @@ const AntennaCalculator = {
      * @returns {number} Effective dielectric constant
      */
     calculateEffectiveDielectric: function(er, h, w) {
-        // Hammerstad and Jensen approximation
+        // Hammerstad and Jensen approximation for microstrip effective dielectric constant
         const u = w / h;
-        const a = 1 + (1/49) * Math.log((Math.pow(u, 4) + Math.pow(u/52, 2)) / (Math.pow(u, 4) + 0.432)) / Math.log(Math.E);
-        const b = 1 + (1/18.7) * Math.log(1 + Math.pow(u/18.1, 3)) / Math.log(Math.E);
+        // Constants from Hammerstad and Jensen empirical formulas
+        const a = 1 + (1/49) * Math.log((Math.pow(u, 4) + Math.pow(u/52, 2)) / (Math.pow(u, 4) + 0.432));
+        const b = 1 + (1/18.7) * Math.log(1 + Math.pow(u/18.1, 3));
         
         const erEff = (er + 1) / 2 + ((er - 1) / 2) * Math.pow(1 + 10/u, -a * b);
         return erEff;
@@ -55,16 +56,16 @@ const AntennaCalculator = {
      * @returns {number} Trace width (mm)
      */
     calculateMicrostripWidth: function(z0, er, h) {
-        const eta = 120 * Math.PI; // Free space impedance
-        
-        // Synthesis formulas
+        // Wheeler's synthesis formulas for microstrip line width
+        // Synthesis formulas to calculate width for target impedance
         const A = (z0 / 60) * Math.sqrt((er + 1) / 2) + ((er - 1) / (er + 1)) * (0.23 + 0.11 / er);
         
         let w_h;
         if (A > 1.52) {
-            const B = 0.61 * Math.log(Math.E);
+            // Wide strip approximation
             w_h = (8 * Math.exp(A)) / (Math.exp(2 * A) - 2);
         } else {
+            // Narrow strip approximation
             const numerator = 2 * (A - 1);
             const denominator = Math.PI - Math.log(2 * Math.PI - 1) + ((er - 1) / (2 * er)) * (Math.log(Math.PI - 1) + 0.39 - 0.61 / er);
             w_h = numerator / denominator;

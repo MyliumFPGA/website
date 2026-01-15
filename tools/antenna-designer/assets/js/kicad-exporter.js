@@ -271,8 +271,26 @@ const KiCadExporter = {
 
     /**
      * Generate a UUID for KiCad timestamps
+     * Uses crypto API when available for better randomness
      */
     generateUUID: function() {
+        // Use crypto.randomUUID if available (modern browsers)
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        
+        // Fallback to crypto.getRandomValues for better randomness than Math.random()
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const array = new Uint8Array(1);
+                crypto.getRandomValues(array);
+                const r = array[0] % 16;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // Final fallback to Math.random (less secure but works everywhere)
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             const r = Math.random() * 16 | 0;
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
