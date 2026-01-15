@@ -52,7 +52,16 @@
                     <!-- Frequency Section -->
                     <div class="input-section">
                         <h3 class="section-title">Frequency</h3>
-                        <div class="input-group">
+                        <div class="input-field">
+                            <label for="frequency-mode">Frequency Mode</label>
+                            <select id="frequency-mode">
+                                <option value="center" selected>Center Frequency</option>
+                                <option value="range">Frequency Range (UWB)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Center Frequency Mode -->
+                        <div id="center-frequency-inputs" class="input-group">
                             <div class="input-field">
                                 <label for="frequency">Target Frequency</label>
                                 <input type="number" id="frequency" value="2400" min="100" step="1">
@@ -65,6 +74,26 @@
                                 </select>
                             </div>
                         </div>
+                        
+                        <!-- Frequency Range Mode -->
+                        <div id="frequency-range-inputs" class="input-group" style="display: none;">
+                            <div class="input-field">
+                                <label for="start-frequency">Start Frequency</label>
+                                <input type="number" id="start-frequency" value="3100" min="100" step="1">
+                            </div>
+                            <div class="input-field">
+                                <label for="stop-frequency">Stop Frequency</label>
+                                <input type="number" id="stop-frequency" value="10600" min="100" step="1">
+                            </div>
+                            <div class="input-field">
+                                <label for="frequency-range-unit">Unit</label>
+                                <select id="frequency-range-unit">
+                                    <option value="MHz" selected>MHz</option>
+                                    <option value="GHz">GHz</option>
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div class="calculated-value">
                             <span class="label">Wavelength (free space):</span>
                             <span id="wavelength-display">124.90 mm</span>

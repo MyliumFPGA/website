@@ -21,9 +21,17 @@ const UIController = {
      * Bind event listeners
      */
     bindEvents: function() {
+        // Frequency mode changes
+        document.getElementById('frequency-mode').addEventListener('change', () => this.toggleFrequencyMode());
+        
         // Frequency changes
         document.getElementById('frequency').addEventListener('input', () => this.updateWavelength());
         document.getElementById('frequency-unit').addEventListener('change', () => this.updateWavelength());
+        
+        // Frequency range changes
+        document.getElementById('start-frequency').addEventListener('input', () => this.updateWavelength());
+        document.getElementById('stop-frequency').addEventListener('input', () => this.updateWavelength());
+        document.getElementById('frequency-range-unit').addEventListener('change', () => this.updateWavelength());
 
         // Material changes
         document.getElementById('material').addEventListener('change', () => this.updateMaterialProperties());
@@ -58,15 +66,43 @@ const UIController = {
     },
 
     /**
+     * Toggle between center frequency and frequency range mode
+     */
+    toggleFrequencyMode: function() {
+        const mode = document.getElementById('frequency-mode').value;
+        const centerInputs = document.getElementById('center-frequency-inputs');
+        const rangeInputs = document.getElementById('frequency-range-inputs');
+        
+        if (mode === 'center') {
+            centerInputs.style.display = '';
+            rangeInputs.style.display = 'none';
+        } else {
+            centerInputs.style.display = 'none';
+            rangeInputs.style.display = '';
+        }
+        
+        this.updateWavelength();
+    },
+
+    /**
      * Update wavelength display
      */
     updateWavelength: function() {
-        const frequency = parseFloat(document.getElementById('frequency').value);
-        const unit = document.getElementById('frequency-unit').value;
+        const mode = document.getElementById('frequency-mode').value;
+        let frequencyMHz;
         
-        let frequencyMHz = frequency;
-        if (unit === 'GHz') {
-            frequencyMHz = frequency * 1000;
+        if (mode === 'center') {
+            const frequency = parseFloat(document.getElementById('frequency').value);
+            const unit = document.getElementById('frequency-unit').value;
+            frequencyMHz = (unit === 'GHz') ? frequency * 1000 : frequency;
+        } else {
+            // For range mode, show wavelength at center frequency
+            const startFreq = parseFloat(document.getElementById('start-frequency').value);
+            const stopFreq = parseFloat(document.getElementById('stop-frequency').value);
+            const unit = document.getElementById('frequency-range-unit').value;
+            const startMHz = (unit === 'GHz') ? startFreq * 1000 : startFreq;
+            const stopMHz = (unit === 'GHz') ? stopFreq * 1000 : stopFreq;
+            frequencyMHz = Math.sqrt(startMHz * stopMHz); // Geometric mean
         }
         
         const wavelength = window.AntennaCalculator.calculateWavelength(frequencyMHz);
@@ -88,17 +124,28 @@ const UIController = {
      * Get current parameters from form
      */
     getParameters: function() {
-        const frequency = parseFloat(document.getElementById('frequency').value);
-        const unit = document.getElementById('frequency-unit').value;
+        const mode = document.getElementById('frequency-mode').value;
+        let frequencyMHz, startFrequencyMHz, stopFrequencyMHz;
         
-        let frequencyMHz = frequency;
-        if (unit === 'GHz') {
-            frequencyMHz = frequency * 1000;
+        if (mode === 'center') {
+            const frequency = parseFloat(document.getElementById('frequency').value);
+            const unit = document.getElementById('frequency-unit').value;
+            frequencyMHz = (unit === 'GHz') ? frequency * 1000 : frequency;
+        } else {
+            const startFreq = parseFloat(document.getElementById('start-frequency').value);
+            const stopFreq = parseFloat(document.getElementById('stop-frequency').value);
+            const unit = document.getElementById('frequency-range-unit').value;
+            startFrequencyMHz = (unit === 'GHz') ? startFreq * 1000 : startFreq;
+            stopFrequencyMHz = (unit === 'GHz') ? stopFreq * 1000 : stopFreq;
+            frequencyMHz = Math.sqrt(startFrequencyMHz * stopFrequencyMHz); // Center frequency for display
         }
 
         return {
+            frequencyMode: mode,
             frequencyMHz: frequencyMHz,
-            frequencyUnit: unit,
+            startFrequencyMHz: startFrequencyMHz,
+            stopFrequencyMHz: stopFrequencyMHz,
+            frequencyUnit: mode === 'center' ? document.getElementById('frequency-unit').value : document.getElementById('frequency-range-unit').value,
             materialId: document.getElementById('material').value,
             boardThickness: parseFloat(document.getElementById('board-thickness').value),
             copperThickness: parseFloat(document.getElementById('copper-thickness').value),
@@ -182,11 +229,37 @@ const UIController = {
             document.getElementById('result-bandwidth').textContent = 
                 `${design.minFrequency} - ${design.maxFrequency} MHz (${design.bandwidthRatio}:1)`;
             bandwidthItem.style.display = '';
+            
+            // Show calculated turns if in range mode
+            if (design.calculatedTurns) {
+                let turnsItem = document.getElementById('result-calculated-turns-item');
+                if (!turnsItem) {
+                    turnsItem = document.createElement('div');
+                    turnsItem.id = 'result-calculated-turns-item';
+                    turnsItem.className = 'result-item';
+                    turnsItem.innerHTML = `
+                        <span class="label">Calculated Turns:</span>
+                        <span id="result-calculated-turns" class="value">-</span>
+                    `;
+                    resultsGrid.appendChild(turnsItem);
+                }
+                document.getElementById('result-calculated-turns').textContent = design.calculatedTurns;
+                turnsItem.style.display = '';
+            } else {
+                const turnsItem = document.getElementById('result-calculated-turns-item');
+                if (turnsItem) {
+                    turnsItem.style.display = 'none';
+                }
+            }
         } else {
             // Hide bandwidth info for Archimedean
             const bandwidthItem = document.getElementById('result-bandwidth-item');
             if (bandwidthItem) {
                 bandwidthItem.style.display = 'none';
+            }
+            const turnsItem = document.getElementById('result-calculated-turns-item');
+            if (turnsItem) {
+                turnsItem.style.display = 'none';
             }
         }
     },
@@ -297,12 +370,24 @@ const UIController = {
         
         let bandwidthSection = '';
         if (design.spiralType === 'logarithmic') {
+            let freqModeInfo = '';
+            if (params.frequencyMode === 'range') {
+                freqModeInfo = `Frequency Mode:          Range (Inverse Calculation)
+Start Frequency:         ${design.minFrequency} MHz
+Stop Frequency:          ${design.maxFrequency} MHz
+Center Frequency:        ${design.centerFrequency || params.frequencyMHz} MHz
+Calculated Turns:        ${design.calculatedTurns}`;
+            } else {
+                freqModeInfo = `Frequency Mode:          Center Frequency
+Center Frequency:        ${params.frequencyMHz} MHz
+Frequency Range:         ${design.minFrequency} - ${design.maxFrequency} MHz`;
+            }
+            
             bandwidthSection = `
 BANDWIDTH (ULTRAWIDEBAND)
 ─────────────────────────────────────────────────────────
-Frequency Range:         ${design.minFrequency} - ${design.maxFrequency} MHz
+${freqModeInfo}
 Bandwidth Ratio:         ${design.bandwidthRatio}:1
-Center Frequency:        ${params.frequencyMHz} MHz
 
 `;
         }

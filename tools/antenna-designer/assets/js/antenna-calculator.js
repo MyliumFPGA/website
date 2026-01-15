@@ -75,6 +75,101 @@ const AntennaCalculator = {
     },
 
     /**
+     * Calculate log-spiral antenna dimensions from frequency range (Inverse calculation)
+     * @param {object} params - Design parameters including start and stop frequencies
+     * @returns {object} Calculated antenna dimensions
+     */
+    calculateLogSpiralFromRange: function(params) {
+        const {
+            startFrequencyMHz,
+            stopFrequencyMHz,
+            materialId,
+            boardThickness,
+            impedance,
+            traceWidth
+        } = params;
+
+        // Get material properties
+        const material = window.MaterialDatabase.getMaterial(materialId);
+        const er = material.dielectricConstant;
+
+        // Calculate center frequency
+        const centerFrequencyMHz = Math.sqrt(startFrequencyMHz * stopFrequencyMHz);
+        
+        // Calculate required bandwidth ratio
+        const requiredBandwidthRatio = stopFrequencyMHz / startFrequencyMHz;
+        
+        // Calculate wavelengths
+        const wavelength = this.calculateWavelength(centerFrequencyMHz);
+        
+        // Calculate effective dielectric constant
+        const erEff = this.calculateEffectiveDielectric(er, boardThickness, traceWidth);
+        
+        // Calculate effective wavelength
+        const wavelengthEff = this.calculateEffectiveWavelength(wavelength, erEff);
+
+        // Use standard growth rate for UWB
+        const growthRate = 0.25;
+        
+        // Calculate required total angle to achieve the bandwidth ratio
+        // bandwidthRatio = exp(growthRate * totalAngle)
+        // totalAngle = ln(bandwidthRatio) / growthRate
+        const totalAngle = Math.log(requiredBandwidthRatio) / growthRate;
+        const turns = totalAngle / (2 * Math.PI);
+        
+        // Inner radius - start at λ_min/20 for UWB coverage
+        const innerRadius = wavelengthEff / 20;
+        
+        // Outer radius based on calculated turns and growth rate
+        const outerRadius = innerRadius * Math.exp(growthRate * totalAngle);
+
+        // Calculate total antenna diameter
+        const antennaDiameter = 2 * outerRadius;
+        
+        // Recommended board size (add 10mm margin on each side)
+        const boardSize = antennaDiameter + 20;
+
+        // Calculate feed point trace width for impedance matching
+        const feedWidth = this.calculateMicrostripWidth(impedance, er, boardThickness);
+
+        // Calculate total trace length (approximate)
+        let totalLength = 0;
+        const steps = 1000;
+        const dTheta = totalAngle / steps;
+        for (let i = 0; i < steps; i++) {
+            const theta1 = i * dTheta;
+            const theta2 = (i + 1) * dTheta;
+            const r1 = innerRadius * Math.exp(growthRate * theta1);
+            const r2 = innerRadius * Math.exp(growthRate * theta2);
+            const dx = r2 * Math.cos(theta2) - r1 * Math.cos(theta1);
+            const dy = r2 * Math.sin(theta2) - r1 * Math.sin(theta1);
+            totalLength += Math.sqrt(dx * dx + dy * dy);
+        }
+
+        return {
+            wavelength,
+            wavelengthEff,
+            erEff,
+            innerRadius,
+            outerRadius,
+            antennaDiameter,
+            boardSize,
+            feedWidth,
+            totalLength,
+            spiralType: 'logarithmic',
+            spiralGrowthRate: growthRate,
+            spiralInnerRadius: innerRadius,
+            totalAngle,
+            material: material.name,
+            bandwidthRatio: requiredBandwidthRatio.toFixed(2),
+            minFrequency: startFrequencyMHz.toFixed(0),
+            maxFrequency: stopFrequencyMHz.toFixed(0),
+            centerFrequency: centerFrequencyMHz.toFixed(0),
+            calculatedTurns: turns.toFixed(2)
+        };
+    },
+
+    /**
      * Calculate log-spiral antenna dimensions (Ultrawideband)
      * @param {object} params - Design parameters
      * @returns {object} Calculated antenna dimensions
@@ -174,15 +269,21 @@ const AntennaCalculator = {
             frequencyMHz,
             materialId,
             boardThickness,
-            copperThickness,
             impedance,
             turns,
             traceWidth,
-            antennaType
+            antennaType,
+            frequencyMode,
+            startFrequencyMHz,
+            stopFrequencyMHz
         } = params;
 
-        // Route to appropriate calculator based on antenna type
+        // Route to appropriate calculator based on antenna type and frequency mode
         if (antennaType === 'logarithmic') {
+            // Check if using frequency range mode (inverse calculation)
+            if (frequencyMode === 'range' && startFrequencyMHz && stopFrequencyMHz) {
+                return this.calculateLogSpiralFromRange(params);
+            }
             return this.calculateLogSpiralAntenna(params);
         }
 
