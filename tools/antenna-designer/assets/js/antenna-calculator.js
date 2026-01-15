@@ -75,6 +75,97 @@ const AntennaCalculator = {
     },
 
     /**
+     * Calculate log-spiral antenna dimensions (Ultrawideband)
+     * @param {object} params - Design parameters
+     * @returns {object} Calculated antenna dimensions
+     */
+    calculateLogSpiralAntenna: function(params) {
+        const {
+            frequencyMHz,
+            materialId,
+            boardThickness,
+            copperThickness,
+            impedance,
+            turns,
+            traceWidth
+        } = params;
+
+        // Get material properties
+        const material = window.MaterialDatabase.getMaterial(materialId);
+        const er = material.dielectricConstant;
+
+        // Calculate wavelengths
+        const wavelength = this.calculateWavelength(frequencyMHz);
+        
+        // Calculate effective dielectric constant
+        const erEff = this.calculateEffectiveDielectric(er, boardThickness, traceWidth);
+        
+        // Calculate effective wavelength
+        const wavelengthEff = this.calculateEffectiveWavelength(wavelength, erEff);
+
+        // Log-spiral parameters
+        // Growth rate for log-spiral (typically 0.22 to 0.3 for UWB)
+        const growthRate = 0.25; // This gives good UWB performance
+        
+        // Inner radius - start at λ_min/20 for UWB coverage
+        // For UWB, we want to cover 3:1 or greater bandwidth
+        const innerRadius = wavelengthEff / 20;
+        
+        // Outer radius based on turns and growth rate
+        // For log-spiral: r = r0 * exp(a * θ)
+        const totalAngle = turns * 2 * Math.PI;
+        const outerRadius = innerRadius * Math.exp(growthRate * totalAngle);
+
+        // Calculate total antenna diameter
+        const antennaDiameter = 2 * outerRadius;
+        
+        // Recommended board size (add 10mm margin on each side)
+        const boardSize = antennaDiameter + 20;
+
+        // Calculate feed point trace width for impedance matching
+        const feedWidth = this.calculateMicrostripWidth(impedance, er, boardThickness);
+
+        // Calculate total trace length (approximate)
+        let totalLength = 0;
+        const steps = 1000;
+        const dTheta = totalAngle / steps;
+        for (let i = 0; i < steps; i++) {
+            const theta1 = i * dTheta;
+            const theta2 = (i + 1) * dTheta;
+            const r1 = innerRadius * Math.exp(growthRate * theta1);
+            const r2 = innerRadius * Math.exp(growthRate * theta2);
+            const dx = r2 * Math.cos(theta2) - r1 * Math.cos(theta1);
+            const dy = r2 * Math.sin(theta2) - r1 * Math.sin(theta1);
+            totalLength += Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Calculate bandwidth (log-spiral typically provides 3:1 or better)
+        const bandwidthRatio = Math.exp(growthRate * totalAngle);
+        const minFrequency = frequencyMHz / Math.sqrt(bandwidthRatio);
+        const maxFrequency = frequencyMHz * Math.sqrt(bandwidthRatio);
+
+        return {
+            wavelength,
+            wavelengthEff,
+            erEff,
+            innerRadius,
+            outerRadius,
+            antennaDiameter,
+            boardSize,
+            feedWidth,
+            totalLength,
+            spiralType: 'logarithmic',
+            spiralGrowthRate: growthRate,
+            spiralInnerRadius: innerRadius,
+            totalAngle,
+            material: material.name,
+            bandwidthRatio: bandwidthRatio.toFixed(2),
+            minFrequency: minFrequency.toFixed(0),
+            maxFrequency: maxFrequency.toFixed(0)
+        };
+    },
+
+    /**
      * Calculate spiral antenna dimensions
      * @param {object} params - Design parameters
      * @returns {object} Calculated antenna dimensions
@@ -87,9 +178,16 @@ const AntennaCalculator = {
             copperThickness,
             impedance,
             turns,
-            traceWidth
+            traceWidth,
+            antennaType
         } = params;
 
+        // Route to appropriate calculator based on antenna type
+        if (antennaType === 'logarithmic') {
+            return this.calculateLogSpiralAntenna(params);
+        }
+
+        // Continue with Archimedean spiral calculation
         // Get material properties
         const material = window.MaterialDatabase.getMaterial(materialId);
         const er = material.dielectricConstant;
@@ -150,11 +248,61 @@ const AntennaCalculator = {
             boardSize,
             feedWidth,
             totalLength,
+            spiralType: 'archimedean',
             spiralA: a,
             spiralB: b,
             totalAngle,
             material: material.name
         };
+    },
+
+    /**
+     * Generate log-spiral points for rendering
+     * @param {number} r0 - Initial radius
+     * @param {number} a - Growth rate
+     * @param {number} totalAngle - Total angle in radians
+     * @param {number} steps - Number of points to generate
+     * @returns {Array} Array of {x, y} points
+     */
+    generateLogSpiralPoints: function(r0, a, totalAngle, steps = 500) {
+        const points = [];
+        const dTheta = totalAngle / steps;
+        
+        for (let i = 0; i <= steps; i++) {
+            const theta = i * dTheta;
+            const r = r0 * Math.exp(a * theta);
+            const x = r * Math.cos(theta);
+            const y = r * Math.sin(theta);
+            points.push({ x, y });
+        }
+        
+        return points;
+    },
+
+    /**
+     * Generate two-arm log-spiral points
+     * @param {number} r0 - Initial radius
+     * @param {number} a - Growth rate
+     * @param {number} totalAngle - Total angle in radians
+     * @param {number} steps - Number of points per arm
+     * @returns {object} Object with arm1 and arm2 point arrays
+     */
+    generateTwoArmLogSpiral: function(r0, a, totalAngle, steps = 500) {
+        const arm1 = this.generateLogSpiralPoints(r0, a, totalAngle, steps);
+        
+        // Second arm is 180 degrees offset
+        const arm2 = [];
+        const dTheta = totalAngle / steps;
+        
+        for (let i = 0; i <= steps; i++) {
+            const theta = i * dTheta + Math.PI; // 180 degree offset
+            const r = r0 * Math.exp(a * theta);
+            const x = r * Math.cos(theta);
+            const y = r * Math.sin(theta);
+            arm2.push({ x, y });
+        }
+        
+        return { arm1, arm2 };
     },
 
     /**

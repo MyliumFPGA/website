@@ -27,6 +27,13 @@ const UIController = {
 
         // Material changes
         document.getElementById('material').addEventListener('change', () => this.updateMaterialProperties());
+        
+        // Antenna type changes
+        document.getElementById('antenna-type').addEventListener('change', () => {
+            if (this.currentDesign) {
+                this.calculateDesign();
+            }
+        });
 
         // Calculate button
         document.getElementById('calculate-btn').addEventListener('click', () => this.calculateDesign());
@@ -98,7 +105,8 @@ const UIController = {
             impedance: parseFloat(document.getElementById('impedance').value),
             turns: parseFloat(document.getElementById('turns').value),
             traceWidth: parseFloat(document.getElementById('trace-width').value),
-            traceSpacing: parseFloat(document.getElementById('trace-spacing').value)
+            traceSpacing: parseFloat(document.getElementById('trace-spacing').value),
+            antennaType: document.getElementById('antenna-type').value
         };
     },
 
@@ -153,6 +161,34 @@ const UIController = {
         document.getElementById('result-diameter').textContent = `${design.antennaDiameter.toFixed(2)} mm`;
         document.getElementById('result-board-size').textContent = `${design.boardSize.toFixed(0)} × ${design.boardSize.toFixed(0)} mm`;
         document.getElementById('result-feed-width').textContent = `${design.feedWidth.toFixed(2)} mm`;
+        
+        // Add bandwidth info for log-spiral
+        if (design.spiralType === 'logarithmic') {
+            // Add bandwidth info to results if not already there
+            const resultsGrid = document.querySelector('.results-grid');
+            let bandwidthItem = document.getElementById('result-bandwidth-item');
+            
+            if (!bandwidthItem) {
+                bandwidthItem = document.createElement('div');
+                bandwidthItem.id = 'result-bandwidth-item';
+                bandwidthItem.className = 'result-item';
+                bandwidthItem.innerHTML = `
+                    <span class="label">Bandwidth (UWB):</span>
+                    <span id="result-bandwidth" class="value">-</span>
+                `;
+                resultsGrid.appendChild(bandwidthItem);
+            }
+            
+            document.getElementById('result-bandwidth').textContent = 
+                `${design.minFrequency} - ${design.maxFrequency} MHz (${design.bandwidthRatio}:1)`;
+            bandwidthItem.style.display = '';
+        } else {
+            // Hide bandwidth info for Archimedean
+            const bandwidthItem = document.getElementById('result-bandwidth-item');
+            if (bandwidthItem) {
+                bandwidthItem.style.display = 'none';
+            }
+        }
     },
 
     /**
@@ -255,6 +291,21 @@ const UIController = {
         const design = this.currentDesign;
         const material = window.MaterialDatabase.getMaterial(params.materialId);
         const date = new Date().toISOString().split('T')[0];
+        
+        const antennaTypeName = params.antennaType === 'logarithmic' ? 
+            'Log-Spiral (Ultrawideband)' : 'Archimedean Spiral (Narrowband)';
+        
+        let bandwidthSection = '';
+        if (design.spiralType === 'logarithmic') {
+            bandwidthSection = `
+BANDWIDTH (ULTRAWIDEBAND)
+─────────────────────────────────────────────────────────
+Frequency Range:         ${design.minFrequency} - ${design.maxFrequency} MHz
+Bandwidth Ratio:         ${design.bandwidthRatio}:1
+Center Frequency:        ${params.frequencyMHz} MHz
+
+`;
+        }
 
         return `PCB SPIRAL ANTENNA DESIGN SUMMARY
 Generated: ${date}
@@ -264,6 +315,7 @@ Tool: mylium.eu Antenna Designer
 
 DESIGN PARAMETERS
 ─────────────────────────────────────────────────────────
+Antenna Type:            ${antennaTypeName}
 Target Frequency:        ${params.frequencyMHz} MHz
 Material:                ${material.name}
 Dielectric Constant:     ${material.dielectricConstant}
@@ -287,11 +339,14 @@ Recommended Board Size:  ${design.boardSize.toFixed(0)} × ${design.boardSize.to
 Feed Point Width:        ${design.feedWidth.toFixed(2)} mm
 Total Trace Length:      ${design.totalLength.toFixed(2)} mm
 
-SPIRAL PARAMETERS
+${bandwidthSection}SPIRAL PARAMETERS
 ─────────────────────────────────────────────────────────
-Spiral Type:             Archimedean (two-arm)
-Growth Rate (b):         ${design.spiralB.toFixed(4)} mm/rad
-Starting Radius (a):     ${design.spiralA.toFixed(2)} mm
+Spiral Type:             ${design.spiralType === 'logarithmic' ? 'Logarithmic (Equiangular)' : 'Archimedean'} (two-arm)
+${design.spiralType === 'logarithmic' ? 
+`Growth Rate (a):         ${design.spiralGrowthRate.toFixed(4)}
+Initial Radius (r0):     ${design.spiralInnerRadius.toFixed(2)} mm` :
+`Growth Rate (b):         ${design.spiralB.toFixed(4)} mm/rad
+Starting Radius (a):     ${design.spiralA.toFixed(2)} mm`}
 Total Angle:             ${(design.totalAngle / Math.PI).toFixed(2)} π rad
 
 MANUFACTURING NOTES
@@ -303,8 +358,12 @@ MANUFACTURING NOTES
 
 PERFORMANCE NOTES
 ─────────────────────────────────────────────────────────
-• Spiral antennas are broadband and circularly polarized
-• Expected bandwidth: ±20-30% around center frequency
+• Spiral antennas are ${design.spiralType === 'logarithmic' ? 'ultrawideband' : 'broadband'} and circularly polarized
+${design.spiralType === 'logarithmic' ? 
+`• Log-spiral provides true ultrawideband performance (3:1 or greater)
+• Frequency-independent impedance characteristics
+• Excellent for UWB applications (3.1-10.6 GHz)` :
+`• Expected bandwidth: ±20-30% around center frequency`}
 • Radiation pattern: nearly omnidirectional
 • Best performance when mounted on ground plane or in free space
 • Feed impedance may require matching network

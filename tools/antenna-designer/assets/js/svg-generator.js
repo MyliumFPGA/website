@@ -31,13 +31,23 @@ const SVGGenerator = {
         substrate.setAttribute('opacity', '0.3');
         svg.appendChild(substrate);
 
-        // Generate spiral arms
-        const spiralArms = window.AntennaCalculator.generateTwoArmSpiral(
-            design.spiralA,
-            design.spiralB,
-            design.totalAngle,
-            500
-        );
+        // Generate spiral arms based on type
+        let spiralArms;
+        if (design.spiralType === 'logarithmic') {
+            spiralArms = window.AntennaCalculator.generateTwoArmLogSpiral(
+                design.spiralInnerRadius,
+                design.spiralGrowthRate,
+                design.totalAngle,
+                500
+            );
+        } else {
+            spiralArms = window.AntennaCalculator.generateTwoArmSpiral(
+                design.spiralA,
+                design.spiralB,
+                design.totalAngle,
+                500
+            );
+        }
 
         // Draw first arm (gold copper)
         this.drawSpiralArm(svg, spiralArms.arm1, params.traceWidth, '#d4af37');
@@ -158,13 +168,23 @@ const SVGGenerator = {
     <circle cx="${center}" cy="${center}" r="${design.outerRadius + 5}" class="substrate"/>
 `;
 
-        // Generate spiral arms
-        const spiralArms = window.AntennaCalculator.generateTwoArmSpiral(
-            design.spiralA,
-            design.spiralB,
-            design.totalAngle,
-            500
-        );
+        // Generate spiral arms based on type
+        let spiralArms;
+        if (design.spiralType === 'logarithmic') {
+            spiralArms = window.AntennaCalculator.generateTwoArmLogSpiral(
+                design.spiralInnerRadius,
+                design.spiralGrowthRate,
+                design.totalAngle,
+                500
+            );
+        } else {
+            spiralArms = window.AntennaCalculator.generateTwoArmSpiral(
+                design.spiralA,
+                design.spiralB,
+                design.totalAngle,
+                500
+            );
+        }
 
         // Draw first arm
         svg += this.generateSpiralPath(spiralArms.arm1, center, center, params.traceWidth);
@@ -259,13 +279,16 @@ const SVGGenerator = {
         if (frequencyUnit === 'GHz') {
             frequencyDisplayValue = rawFrequencyMHz / 1000;
         }
+        
+        const antennaTypeName = design.spiralType === 'logarithmic' ? 
+            'Log-Spiral (UWB)' : 'Archimedean';
 
         const specs = [
+            `Type: ${antennaTypeName}`,
             `Frequency: ${frequencyDisplayValue} ${frequencyUnit}`,
             `Material: ${design.material}`,
             `Turns: ${params.turns}`,
             `Trace: ${params.traceWidth} mm`,
-            `Spacing: ${params.traceSpacing} mm`,
             `Impedance: ${params.impedance} Ω`
         ];
 
