@@ -251,8 +251,17 @@ const SVGGenerator = {
         let legend = `    <!-- Legend and Specifications -->\n`;
         legend += `    <rect x="${x}" y="${y}" width="80" height="50" fill="white" stroke="#333" stroke-width="0.5" opacity="0.9" rx="2"/>\n`;
         
+        // frequencyMHz is stored in MHz; convert to the selected display unit if needed
+        const rawFrequencyMHz = params.frequencyMHz;
+        const frequencyUnit = params.frequencyUnit || 'MHz';
+        let frequencyDisplayValue = rawFrequencyMHz;
+
+        if (frequencyUnit === 'GHz') {
+            frequencyDisplayValue = rawFrequencyMHz / 1000;
+        }
+
         const specs = [
-            `Frequency: ${params.frequencyMHz} ${params.frequencyUnit}`,
+            `Frequency: ${frequencyDisplayValue} ${frequencyUnit}`,
             `Material: ${design.material}`,
             `Turns: ${params.turns}`,
             `Trace: ${params.traceWidth} mm`,
