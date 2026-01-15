@@ -141,8 +141,8 @@ const AntennaCalculator = {
 
         // Calculate bandwidth (log-spiral typically provides 3:1 or better)
         const bandwidthRatio = Math.exp(growthRate * totalAngle);
-        const minFrequency = frequencyMHz / Math.sqrt(bandwidthRatio);
-        const maxFrequency = frequencyMHz * Math.sqrt(bandwidthRatio);
+        const minFrequency = frequencyMHz / bandwidthRatio;
+        const maxFrequency = frequencyMHz * bandwidthRatio;
 
         return {
             wavelength,
