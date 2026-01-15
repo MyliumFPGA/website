@@ -84,7 +84,6 @@ const AntennaCalculator = {
             frequencyMHz,
             materialId,
             boardThickness,
-            copperThickness,
             impedance,
             turns,
             traceWidth

@@ -408,7 +408,7 @@ Where εeff is the effective dielectric constant accounting for substrate effect
 **Results**:
 - Diameter: ~40mm
 - Board: 60×60mm
-- Bandwidth: 1500-24000 MHz (16:1 ratio!)
+- Bandwidth: 1247-28863 MHz (23:1 ratio!)
 - Application: UWB radar, UWB communications (IEEE 802.15.4a), EMC testing, multi-band systems
 
 **Note**: Log-spiral provides true ultrawideband coverage with frequency-independent characteristics.

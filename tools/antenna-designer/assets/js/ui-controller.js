@@ -306,6 +306,16 @@ Center Frequency:        ${params.frequencyMHz} MHz
 
 `;
         }
+        
+        // Format spiral parameters based on type
+        let spiralParamsSection;
+        if (design.spiralType === 'logarithmic') {
+            spiralParamsSection = `Growth Rate (a):         ${design.spiralGrowthRate.toFixed(4)}
+Initial Radius (r0):     ${design.spiralInnerRadius.toFixed(2)} mm`;
+        } else {
+            spiralParamsSection = `Growth Rate (b):         ${design.spiralB.toFixed(4)} mm/rad
+Starting Radius (a):     ${design.spiralA.toFixed(2)} mm`;
+        }
 
         return `PCB SPIRAL ANTENNA DESIGN SUMMARY
 Generated: ${date}
@@ -342,11 +352,7 @@ Total Trace Length:      ${design.totalLength.toFixed(2)} mm
 ${bandwidthSection}SPIRAL PARAMETERS
 ─────────────────────────────────────────────────────────
 Spiral Type:             ${design.spiralType === 'logarithmic' ? 'Logarithmic (Equiangular)' : 'Archimedean'} (two-arm)
-${design.spiralType === 'logarithmic' ? 
-`Growth Rate (a):         ${design.spiralGrowthRate.toFixed(4)}
-Initial Radius (r0):     ${design.spiralInnerRadius.toFixed(2)} mm` :
-`Growth Rate (b):         ${design.spiralB.toFixed(4)} mm/rad
-Starting Radius (a):     ${design.spiralA.toFixed(2)} mm`}
+${spiralParamsSection}
 Total Angle:             ${(design.totalAngle / Math.PI).toFixed(2)} π rad
 
 MANUFACTURING NOTES
