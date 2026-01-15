@@ -387,7 +387,7 @@ For issues, suggestions, or questions:
 
 ## Version History
 
-**v1.0.0** (2024)
+**v1.0.0** (2026)
 - Initial release
 - Support for FR4 and Rogers materials
 - KiCad and SVG export
