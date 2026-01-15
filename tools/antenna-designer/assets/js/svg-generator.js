@@ -289,6 +289,7 @@ const SVGGenerator = {
             `Material: ${design.material}`,
             `Turns: ${params.turns}`,
             `Trace: ${params.traceWidth} mm`,
+            `Spacing: ${params.traceSpacing} mm`,
             `Impedance: ${params.impedance} Ω`
         ];
 
