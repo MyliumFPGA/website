@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB Spiral Antenna Designer | mylium.eu</title>
+    
+    <!-- Material Design CSS -->
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9GBTGG0QQR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-9GBTGG0QQR');
+    </script>
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="mdc-top-app-bar">
+        <div class="mdc-top-app-bar__row">
+            <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+                <a href="https://www.mylium.eu" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
+                    <span class="mdc-top-app-bar__title">MYLIUM</span>
+                </a>
+            </section>
+        </div>
+    </header>
+
+    <main class="mdc-top-app-bar--fixed-adjust">
+        <div class="container">
+            <!-- Hero Section -->
+            <div class="mdc-card hero-card">
+                <div class="mdc-card__content">
+                    <h1 class="mdc-typography--headline4">📡 PCB Spiral Antenna Designer</h1>
+                    <p class="mdc-typography--body1">Design spiral antennas for PCB fabrication with JLCPCB materials. Calculate dimensions, preview designs, and export to KiCad and SVG formats.</p>
+                </div>
+            </div>
+
+            <!-- Design Parameters Card -->
+            <div class="mdc-card">
+                <div class="mdc-card__content">
+                    <h2 class="mdc-typography--headline6">Design Parameters</h2>
+                    
+                    <!-- Frequency Section -->
+                    <div class="input-section">
+                        <h3 class="section-title">Frequency</h3>
+                        <div class="input-group">
+                            <div class="input-field">
+                                <label for="frequency">Target Frequency</label>
+                                <input type="number" id="frequency" value="2400" min="100" step="1">
+                            </div>
+                            <div class="input-field">
+                                <label for="frequency-unit">Unit</label>
+                                <select id="frequency-unit">
+                                    <option value="MHz" selected>MHz</option>
+                                    <option value="GHz">GHz</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="calculated-value">
+                            <span class="label">Wavelength (free space):</span>
+                            <span id="wavelength-display">124.90 mm</span>
+                        </div>
+                    </div>
+
+                    <!-- Material Section -->
+                    <div class="input-section">
+                        <h3 class="section-title">PCB Material (JLCPCB)</h3>
+                        <div class="input-field">
+                            <label for="material">Material Type</label>
+                            <select id="material">
+                                <optgroup label="FR4 Grades">
+                                    <option value="fr4-standard">Standard FR4 (TG130-140)</option>
+                                    <option value="fr4-tg155">FR4 TG155</option>
+                                    <option value="fr4-tg170">FR4 TG170</option>
+                                </optgroup>
+                                <optgroup label="Rogers Materials">
+                                    <option value="ro4003c">RO4003C</option>
+                                    <option value="ro4350b">RO4350B</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="material-properties">
+                            <div class="property">
+                                <span class="label">Dielectric Constant (εr):</span>
+                                <span id="er-display">4.6</span>
+                            </div>
+                            <div class="property">
+                                <span class="label">Loss Tangent (tan δ):</span>
+                                <span id="loss-tangent-display">0.02</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PCB Specifications -->
+                    <div class="input-section">
+                        <h3 class="section-title">PCB Specifications</h3>
+                        <div class="input-group">
+                            <div class="input-field">
+                                <label for="board-thickness">Board Thickness</label>
+                                <select id="board-thickness">
+                                    <option value="0.4">0.4 mm</option>
+                                    <option value="0.6">0.6 mm</option>
+                                    <option value="0.8">0.8 mm</option>
+                                    <option value="1.0">1.0 mm</option>
+                                    <option value="1.2">1.2 mm</option>
+                                    <option value="1.6" selected>1.6 mm</option>
+                                    <option value="2.0">2.0 mm</option>
+                                </select>
+                            </div>
+                            <div class="input-field">
+                                <label for="copper-thickness">Copper Thickness</label>
+                                <select id="copper-thickness">
+                                    <option value="0.5">0.5 oz (17.5 μm)</option>
+                                    <option value="1" selected>1 oz (35 μm)</option>
+                                    <option value="2">2 oz (70 μm)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Antenna Parameters -->
+                    <div class="input-section">
+                        <h3 class="section-title">Antenna Parameters</h3>
+                        <div class="input-group">
+                            <div class="input-field">
+                                <label for="impedance">Target Impedance</label>
+                                <select id="impedance">
+                                    <option value="50" selected>50 Ω</option>
+                                    <option value="75">75 Ω</option>
+                                </select>
+                            </div>
+                            <div class="input-field">
+                                <label for="turns">Number of Turns</label>
+                                <input type="number" id="turns" value="2" min="1" max="5" step="0.5">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <div class="input-field">
+                                <label for="trace-width">Trace Width (mm)</label>
+                                <input type="number" id="trace-width" value="1.0" min="0.15" step="0.05">
+                            </div>
+                            <div class="input-field">
+                                <label for="trace-spacing">Trace Spacing (mm)</label>
+                                <input type="number" id="trace-spacing" value="0.5" min="0.15" step="0.05">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calculate Button -->
+                    <div class="button-container">
+                        <button id="calculate-btn" class="mdc-button mdc-button--raised">
+                            <span class="mdc-button__ripple"></span>
+                            <span class="mdc-button__label">Calculate Design</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Card -->
+            <div id="results-card" class="mdc-card" style="display: none;">
+                <div class="mdc-card__content">
+                    <h2 class="mdc-typography--headline6">Design Results</h2>
+                    
+                    <div class="results-grid">
+                        <div class="result-item">
+                            <span class="label">Effective Wavelength:</span>
+                            <span id="result-eff-wavelength" class="value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Inner Radius:</span>
+                            <span id="result-inner-radius" class="value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Outer Radius:</span>
+                            <span id="result-outer-radius" class="value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Total Antenna Diameter:</span>
+                            <span id="result-diameter" class="value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Recommended Board Size:</span>
+                            <span id="result-board-size" class="value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Feed Point Trace Width:</span>
+                            <span id="result-feed-width" class="value">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Manufacturing Validation -->
+                    <div id="validation-messages" class="validation-section"></div>
+                </div>
+            </div>
+
+            <!-- Preview Card -->
+            <div id="preview-card" class="mdc-card" style="display: none;">
+                <div class="mdc-card__content">
+                    <h2 class="mdc-typography--headline6">Antenna Preview</h2>
+                    <div class="preview-container">
+                        <svg id="antenna-preview" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+                            <!-- Preview will be generated here -->
+                        </svg>
+                    </div>
+                    <div class="preview-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #d4af37;"></span>
+                            <span>Copper Trace</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #4CAF50;"></span>
+                            <span>PCB Substrate</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #ff4444;"></span>
+                            <span>Feed Point</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Card -->
+            <div id="export-card" class="mdc-card" style="display: none;">
+                <div class="mdc-card__content">
+                    <h2 class="mdc-typography--headline6">Export Design</h2>
+                    <div class="button-group">
+                        <button id="export-kicad-btn" class="mdc-button mdc-button--raised">
+                            <span class="mdc-button__ripple"></span>
+                            <i class="material-icons mdc-button__icon">download</i>
+                            <span class="mdc-button__label">Download KiCad PCB</span>
+                        </button>
+                        <button id="export-svg-btn" class="mdc-button mdc-button--raised">
+                            <span class="mdc-button__ripple"></span>
+                            <i class="material-icons mdc-button__icon">download</i>
+                            <span class="mdc-button__label">Download SVG</span>
+                        </button>
+                        <button id="export-summary-btn" class="mdc-button mdc-button--outlined">
+                            <span class="mdc-button__ripple"></span>
+                            <i class="material-icons mdc-button__icon">description</i>
+                            <span class="mdc-button__label">Download Summary</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="mdc-card info-card">
+                <div class="mdc-card__content">
+                    <h2 class="mdc-typography--headline6">About This Tool</h2>
+                    <p class="mdc-typography--body2">
+                        This tool generates Archimedean spiral antenna designs optimized for PCB fabrication using JLCPCB materials and capabilities. 
+                        The design calculations account for substrate effects, dielectric constants, and manufacturing constraints.
+                    </p>
+                    <p class="mdc-typography--body2">
+                        <strong>Key Features:</strong>
+                    </p>
+                    <ul class="mdc-typography--body2">
+                        <li>Automatic wavelength and impedance calculations</li>
+                        <li>Material property database for JLCPCB options</li>
+                        <li>Manufacturing validation (minimum trace width/spacing)</li>
+                        <li>KiCad PCB file export for direct fabrication</li>
+                        <li>SVG export for documentation</li>
+                    </ul>
+                    <p class="mdc-typography--body2">
+                        <strong>Note:</strong> All processing happens in your browser. No data is sent to any server.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Material Design JS -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    
+    <!-- Custom JS Modules -->
+    <script src="assets/js/material-database.js"></script>
+    <script src="assets/js/antenna-calculator.js"></script>
+    <script src="assets/js/svg-generator.js"></script>
+    <script src="assets/js/kicad-exporter.js"></script>
+    <script src="assets/js/ui-controller.js"></script>
+</body>
+</html>
