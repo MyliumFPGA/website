@@ -87,8 +87,7 @@ const AntennaCalculator = {
             copperThickness,
             impedance,
             turns,
-            traceWidth,
-            traceSpacing
+            traceWidth
         } = params;
 
         // Get material properties
