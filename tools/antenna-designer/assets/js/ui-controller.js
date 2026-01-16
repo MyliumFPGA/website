@@ -21,12 +21,27 @@ const UIController = {
      * Bind event listeners
      */
     bindEvents: function() {
+        // Frequency mode changes
+        document.getElementById('frequency-mode').addEventListener('change', () => this.toggleFrequencyMode());
+        
         // Frequency changes
         document.getElementById('frequency').addEventListener('input', () => this.updateWavelength());
         document.getElementById('frequency-unit').addEventListener('change', () => this.updateWavelength());
+        
+        // Frequency range changes
+        document.getElementById('start-frequency').addEventListener('input', () => this.updateWavelength());
+        document.getElementById('stop-frequency').addEventListener('input', () => this.updateWavelength());
+        document.getElementById('frequency-range-unit').addEventListener('change', () => this.updateWavelength());
 
         // Material changes
         document.getElementById('material').addEventListener('change', () => this.updateMaterialProperties());
+        
+        // Antenna type changes
+        document.getElementById('antenna-type').addEventListener('change', () => {
+            if (this.currentDesign) {
+                this.calculateDesign();
+            }
+        });
 
         // Calculate button
         document.getElementById('calculate-btn').addEventListener('click', () => this.calculateDesign());
@@ -51,15 +66,43 @@ const UIController = {
     },
 
     /**
+     * Toggle between center frequency and frequency range mode
+     */
+    toggleFrequencyMode: function() {
+        const mode = document.getElementById('frequency-mode').value;
+        const centerInputs = document.getElementById('center-frequency-inputs');
+        const rangeInputs = document.getElementById('frequency-range-inputs');
+        
+        if (mode === 'center') {
+            centerInputs.style.display = '';
+            rangeInputs.style.display = 'none';
+        } else {
+            centerInputs.style.display = 'none';
+            rangeInputs.style.display = '';
+        }
+        
+        this.updateWavelength();
+    },
+
+    /**
      * Update wavelength display
      */
     updateWavelength: function() {
-        const frequency = parseFloat(document.getElementById('frequency').value);
-        const unit = document.getElementById('frequency-unit').value;
+        const mode = document.getElementById('frequency-mode').value;
+        let frequencyMHz;
         
-        let frequencyMHz = frequency;
-        if (unit === 'GHz') {
-            frequencyMHz = frequency * 1000;
+        if (mode === 'center') {
+            const frequency = parseFloat(document.getElementById('frequency').value);
+            const unit = document.getElementById('frequency-unit').value;
+            frequencyMHz = (unit === 'GHz') ? frequency * 1000 : frequency;
+        } else {
+            // For range mode, show wavelength at center frequency
+            const startFreq = parseFloat(document.getElementById('start-frequency').value);
+            const stopFreq = parseFloat(document.getElementById('stop-frequency').value);
+            const unit = document.getElementById('frequency-range-unit').value;
+            const startMHz = (unit === 'GHz') ? startFreq * 1000 : startFreq;
+            const stopMHz = (unit === 'GHz') ? stopFreq * 1000 : stopFreq;
+            frequencyMHz = Math.sqrt(startMHz * stopMHz); // Geometric mean
         }
         
         const wavelength = window.AntennaCalculator.calculateWavelength(frequencyMHz);
@@ -81,24 +124,36 @@ const UIController = {
      * Get current parameters from form
      */
     getParameters: function() {
-        const frequency = parseFloat(document.getElementById('frequency').value);
-        const unit = document.getElementById('frequency-unit').value;
+        const mode = document.getElementById('frequency-mode').value;
+        let frequencyMHz, startFrequencyMHz, stopFrequencyMHz;
         
-        let frequencyMHz = frequency;
-        if (unit === 'GHz') {
-            frequencyMHz = frequency * 1000;
+        if (mode === 'center') {
+            const frequency = parseFloat(document.getElementById('frequency').value);
+            const unit = document.getElementById('frequency-unit').value;
+            frequencyMHz = (unit === 'GHz') ? frequency * 1000 : frequency;
+        } else {
+            const startFreq = parseFloat(document.getElementById('start-frequency').value);
+            const stopFreq = parseFloat(document.getElementById('stop-frequency').value);
+            const unit = document.getElementById('frequency-range-unit').value;
+            startFrequencyMHz = (unit === 'GHz') ? startFreq * 1000 : startFreq;
+            stopFrequencyMHz = (unit === 'GHz') ? stopFreq * 1000 : stopFreq;
+            frequencyMHz = Math.sqrt(startFrequencyMHz * stopFrequencyMHz); // Center frequency for display
         }
 
         return {
+            frequencyMode: mode,
             frequencyMHz: frequencyMHz,
-            frequencyUnit: unit,
+            startFrequencyMHz: startFrequencyMHz,
+            stopFrequencyMHz: stopFrequencyMHz,
+            frequencyUnit: mode === 'center' ? document.getElementById('frequency-unit').value : document.getElementById('frequency-range-unit').value,
             materialId: document.getElementById('material').value,
             boardThickness: parseFloat(document.getElementById('board-thickness').value),
             copperThickness: parseFloat(document.getElementById('copper-thickness').value),
             impedance: parseFloat(document.getElementById('impedance').value),
             turns: parseFloat(document.getElementById('turns').value),
             traceWidth: parseFloat(document.getElementById('trace-width').value),
-            traceSpacing: parseFloat(document.getElementById('trace-spacing').value)
+            traceSpacing: parseFloat(document.getElementById('trace-spacing').value),
+            antennaType: document.getElementById('antenna-type').value
         };
     },
 
@@ -153,6 +208,60 @@ const UIController = {
         document.getElementById('result-diameter').textContent = `${design.antennaDiameter.toFixed(2)} mm`;
         document.getElementById('result-board-size').textContent = `${design.boardSize.toFixed(0)} × ${design.boardSize.toFixed(0)} mm`;
         document.getElementById('result-feed-width').textContent = `${design.feedWidth.toFixed(2)} mm`;
+        
+        // Add bandwidth info for log-spiral
+        if (design.spiralType === 'logarithmic') {
+            // Add bandwidth info to results if not already there
+            const resultsGrid = document.querySelector('.results-grid');
+            let bandwidthItem = document.getElementById('result-bandwidth-item');
+            
+            if (!bandwidthItem) {
+                bandwidthItem = document.createElement('div');
+                bandwidthItem.id = 'result-bandwidth-item';
+                bandwidthItem.className = 'result-item';
+                bandwidthItem.innerHTML = `
+                    <span class="label">Bandwidth (UWB):</span>
+                    <span id="result-bandwidth" class="value">-</span>
+                `;
+                resultsGrid.appendChild(bandwidthItem);
+            }
+            
+            document.getElementById('result-bandwidth').textContent = 
+                `${design.minFrequency} - ${design.maxFrequency} MHz (${design.bandwidthRatio}:1)`;
+            bandwidthItem.style.display = '';
+            
+            // Show calculated turns if in range mode
+            if (design.calculatedTurns) {
+                let turnsItem = document.getElementById('result-calculated-turns-item');
+                if (!turnsItem) {
+                    turnsItem = document.createElement('div');
+                    turnsItem.id = 'result-calculated-turns-item';
+                    turnsItem.className = 'result-item';
+                    turnsItem.innerHTML = `
+                        <span class="label">Calculated Turns:</span>
+                        <span id="result-calculated-turns" class="value">-</span>
+                    `;
+                    resultsGrid.appendChild(turnsItem);
+                }
+                document.getElementById('result-calculated-turns').textContent = design.calculatedTurns;
+                turnsItem.style.display = '';
+            } else {
+                const turnsItem = document.getElementById('result-calculated-turns-item');
+                if (turnsItem) {
+                    turnsItem.style.display = 'none';
+                }
+            }
+        } else {
+            // Hide bandwidth info for Archimedean
+            const bandwidthItem = document.getElementById('result-bandwidth-item');
+            if (bandwidthItem) {
+                bandwidthItem.style.display = 'none';
+            }
+            const turnsItem = document.getElementById('result-calculated-turns-item');
+            if (turnsItem) {
+                turnsItem.style.display = 'none';
+            }
+        }
     },
 
     /**
@@ -255,6 +364,43 @@ const UIController = {
         const design = this.currentDesign;
         const material = window.MaterialDatabase.getMaterial(params.materialId);
         const date = new Date().toISOString().split('T')[0];
+        
+        const antennaTypeName = params.antennaType === 'logarithmic' ? 
+            'Log-Spiral (Ultrawideband)' : 'Archimedean Spiral (Narrowband)';
+        
+        let bandwidthSection = '';
+        if (design.spiralType === 'logarithmic') {
+            let freqModeInfo = '';
+            if (params.frequencyMode === 'range') {
+                freqModeInfo = `Frequency Mode:          Range (Inverse Calculation)
+Start Frequency:         ${design.minFrequency} MHz
+Stop Frequency:          ${design.maxFrequency} MHz
+Center Frequency:        ${design.centerFrequency || params.frequencyMHz} MHz
+Calculated Turns:        ${design.calculatedTurns}`;
+            } else {
+                freqModeInfo = `Frequency Mode:          Center Frequency
+Center Frequency:        ${params.frequencyMHz} MHz
+Frequency Range:         ${design.minFrequency} - ${design.maxFrequency} MHz`;
+            }
+            
+            bandwidthSection = `
+BANDWIDTH (ULTRAWIDEBAND)
+─────────────────────────────────────────────────────────
+${freqModeInfo}
+Bandwidth Ratio:         ${design.bandwidthRatio}:1
+
+`;
+        }
+        
+        // Format spiral parameters based on type
+        let spiralParamsSection;
+        if (design.spiralType === 'logarithmic') {
+            spiralParamsSection = `Growth Rate (a):         ${design.spiralGrowthRate.toFixed(4)}
+Initial Radius (r0):     ${design.spiralInnerRadius.toFixed(2)} mm`;
+        } else {
+            spiralParamsSection = `Growth Rate (b):         ${design.spiralB.toFixed(4)} mm/rad
+Starting Radius (a):     ${design.spiralA.toFixed(2)} mm`;
+        }
 
         return `PCB SPIRAL ANTENNA DESIGN SUMMARY
 Generated: ${date}
@@ -264,6 +410,7 @@ Tool: mylium.eu Antenna Designer
 
 DESIGN PARAMETERS
 ─────────────────────────────────────────────────────────
+Antenna Type:            ${antennaTypeName}
 Target Frequency:        ${params.frequencyMHz} MHz
 Material:                ${material.name}
 Dielectric Constant:     ${material.dielectricConstant}
@@ -287,11 +434,10 @@ Recommended Board Size:  ${design.boardSize.toFixed(0)} × ${design.boardSize.to
 Feed Point Width:        ${design.feedWidth.toFixed(2)} mm
 Total Trace Length:      ${design.totalLength.toFixed(2)} mm
 
-SPIRAL PARAMETERS
+${bandwidthSection}SPIRAL PARAMETERS
 ─────────────────────────────────────────────────────────
-Spiral Type:             Archimedean (two-arm)
-Growth Rate (b):         ${design.spiralB.toFixed(4)} mm/rad
-Starting Radius (a):     ${design.spiralA.toFixed(2)} mm
+Spiral Type:             ${design.spiralType === 'logarithmic' ? 'Logarithmic (Equiangular)' : 'Archimedean'} (two-arm)
+${spiralParamsSection}
 Total Angle:             ${(design.totalAngle / Math.PI).toFixed(2)} π rad
 
 MANUFACTURING NOTES
@@ -303,8 +449,12 @@ MANUFACTURING NOTES
 
 PERFORMANCE NOTES
 ─────────────────────────────────────────────────────────
-• Spiral antennas are broadband and circularly polarized
-• Expected bandwidth: ±20-30% around center frequency
+• Spiral antennas are ${design.spiralType === 'logarithmic' ? 'ultrawideband' : 'broadband'} and circularly polarized
+${design.spiralType === 'logarithmic' ? 
+`• Log-spiral provides true ultrawideband performance (3:1 or greater)
+• Frequency-independent impedance characteristics
+• Excellent for UWB applications (3.1-10.6 GHz)` :
+`• Expected bandwidth: ±20-30% around center frequency`}
 • Radiation pattern: nearly omnidirectional
 • Best performance when mounted on ground plane or in free space
 • Feed impedance may require matching network

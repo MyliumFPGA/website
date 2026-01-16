@@ -161,13 +161,23 @@ const KiCadExporter = {
     generateSpiralTraces: function(design, params) {
         let traces = '';
         
-        // Generate spiral arms
-        const spiralArms = window.AntennaCalculator.generateTwoArmSpiral(
-            design.spiralA,
-            design.spiralB,
-            design.totalAngle,
-            200 // Fewer points for KiCad to keep file size manageable
-        );
+        // Generate spiral arms based on type
+        let spiralArms;
+        if (design.spiralType === 'logarithmic') {
+            spiralArms = window.AntennaCalculator.generateTwoArmLogSpiral(
+                design.spiralInnerRadius,
+                design.spiralGrowthRate,
+                design.totalAngle,
+                200 // Fewer points for KiCad to keep file size manageable
+            );
+        } else {
+            spiralArms = window.AntennaCalculator.generateTwoArmSpiral(
+                design.spiralA,
+                design.spiralB,
+                design.totalAngle,
+                200 // Fewer points for KiCad to keep file size manageable
+            );
+        }
 
         // Generate trace segments for arm 1
         traces += this.generateArmTraces(spiralArms.arm1, params.traceWidth, 'F.Cu');
@@ -201,12 +211,23 @@ const KiCadExporter = {
      * Generate feed point pads
      */
     generateFeedPads: function(design, params) {
-        const spiralArms = window.AntennaCalculator.generateTwoArmSpiral(
-            design.spiralA,
-            design.spiralB,
-            design.totalAngle,
-            100
-        );
+        // Generate spiral arms based on type
+        let spiralArms;
+        if (design.spiralType === 'logarithmic') {
+            spiralArms = window.AntennaCalculator.generateTwoArmLogSpiral(
+                design.spiralInnerRadius,
+                design.spiralGrowthRate,
+                design.totalAngle,
+                100
+            );
+        } else {
+            spiralArms = window.AntennaCalculator.generateTwoArmSpiral(
+                design.spiralA,
+                design.spiralB,
+                design.totalAngle,
+                100
+            );
+        }
 
         const p1 = spiralArms.arm1[0];
         const p2 = spiralArms.arm2[0];

@@ -4,10 +4,13 @@ A web-based tool for designing spiral antennas optimized for PCB fabrication usi
 
 ## Overview
 
-This tool generates Archimedean spiral antenna designs with automatic calculation of dimensions based on target frequency, material properties, and PCB specifications. It provides KiCad PCB file exports and SVG drawings for documentation.
+This tool generates both **Archimedean spiral** (narrowband) and **Log-spiral** (ultrawideband/UWB) antenna designs with automatic calculation of dimensions based on target frequency, material properties, and PCB specifications. It provides KiCad PCB file exports and SVG drawings for documentation.
 
 ## Features
 
+- **Multiple Antenna Types**: 
+  - Archimedean Spiral (Narrowband) - for standard bandwidth applications
+  - Log-Spiral (Ultrawideband/UWB) - for extremely wide bandwidth applications (3:1 or greater)
 - **Frequency-based Design**: Automatically calculates antenna dimensions from target frequency
 - **JLCPCB Material Database**: Pre-configured with FR4 and Rogers material properties
 - **Real-time Validation**: Checks against JLCPCB manufacturing constraints
@@ -27,7 +30,22 @@ This tool generates Archimedean spiral antenna designs with automatic calculatio
 - Choose units (MHz or GHz)
 - The tool automatically calculates the free-space wavelength
 
-### 2. Select PCB Material
+### 2. Select Antenna Type
+
+**Archimedean Spiral (Narrowband)**:
+- Traditional spiral antenna design
+- Bandwidth: ±20-30% around center frequency
+- More compact size
+- Best for single-band applications
+
+**Log-Spiral (Ultrawideband/UWB)**:
+- Frequency-independent design
+- Bandwidth: 3:1 or greater (often 10:1 or more)
+- Larger size for same center frequency
+- Ideal for UWB applications (3.1-10.6 GHz), wideband radar, EMC testing
+- Constant impedance across frequency range
+
+### 3. Select PCB Material
 
 Choose from JLCPCB-available materials:
 
@@ -40,7 +58,7 @@ Choose from JLCPCB-available materials:
 - RO4003C: εr = 3.38, tan δ = 0.0027 @ 10 GHz
 - RO4350B: εr = 3.48, tan δ = 0.0037 @ 10 GHz
 
-### 3. Configure PCB Specifications
+### 4. Configure PCB Specifications
 
 **Board Thickness**: Choose from 0.4mm to 2.0mm
 - Standard: 1.6mm
@@ -50,7 +68,7 @@ Choose from JLCPCB-available materials:
 - Standard: 1 oz (35 μm)
 - Thicker copper for higher current capacity
 
-### 4. Set Antenna Parameters
+### 5. Set Antenna Parameters
 
 **Target Impedance**: 50Ω (standard) or 75Ω
 - Most RF systems use 50Ω
@@ -58,7 +76,7 @@ Choose from JLCPCB-available materials:
 
 **Number of Turns**: 1-5 turns
 - Typical: 1.5-3 turns
-- More turns = wider bandwidth
+- More turns = wider bandwidth (Archimedean) or larger frequency range (Log-spiral)
 - Fewer turns = smaller size
 
 **Trace Width & Spacing**:
@@ -66,15 +84,16 @@ Choose from JLCPCB-available materials:
 - Recommended: ≥0.15mm for better yield
 - Adjust based on frequency and impedance requirements
 
-### 5. Calculate and Review
+### 6. Calculate and Review
 
 Click "Calculate Design" to:
 - Compute antenna dimensions
+- Calculate bandwidth (UWB range for log-spiral)
 - Validate against manufacturing limits
 - Generate real-time preview
 - Display warnings if any parameters are outside recommended ranges
 
-### 6. Export Your Design
+### 7. Export Your Design
 
 **KiCad PCB File**:
 - Ready to import into KiCad 6+
@@ -93,7 +112,7 @@ Click "Calculate Design" to:
 
 ## Design Theory
 
-### Archimedean Spiral
+### Archimedean Spiral (Narrowband)
 
 The tool generates two-arm Archimedean spiral antennas with the equation:
 
@@ -104,8 +123,36 @@ r = a + b·θ
 Where:
 - `r` is the radius at angle θ
 - `a` is the starting radius (inner radius)
-- `b` is the growth rate
+- `b` is the growth rate constant (produces linear radial growth)
 - `θ` is the angle in radians
+
+**Characteristics**:
+- **Bandwidth**: ±20-30% around center frequency
+- **Size**: More compact than log-spiral
+- **Best for**: Single-band or moderate bandwidth applications
+
+### Log-Spiral (Ultrawideband/UWB)
+
+The tool also supports logarithmic (equiangular) spiral antennas with the equation:
+
+```
+r = r₀·e^(a·θ)
+```
+
+Where:
+- `r` is the radius at angle θ
+- `r₀` is the initial radius
+- `a` is the growth rate constant (typically 0.22-0.3 for UWB)
+- `θ` is the angle in radians
+- `e` is Euler's number
+
+**Characteristics**:
+- **Bandwidth**: 3:1 or greater (often 10:1 or more) - true ultrawideband
+- **Frequency Independence**: Impedance and pattern remain relatively constant across frequency
+- **Size**: Larger than Archimedean for same center frequency
+- **Best for**: UWB applications (3.1-10.6 GHz), wideband radar, EMC testing, multi-band systems
+
+**Key Advantage**: The log-spiral's self-similar geometry makes it frequency-independent, allowing operation over extremely wide bandwidth ratios.
 
 ### Key Calculations
 
@@ -127,9 +174,9 @@ Where εeff is the effective dielectric constant accounting for substrate effect
 
 ### Antenna Characteristics
 
-**Bandwidth**: Spiral antennas are inherently broadband
-- Typical: ±20-30% around center frequency
-- Can be extended with proper feed design
+**Bandwidth**: 
+- **Archimedean**: ±20-30% around center frequency
+- **Log-Spiral**: 3:1 or greater (ultrawideband)
 
 **Polarization**: Circular polarization
 - Right-hand or left-hand depending on feed
@@ -139,8 +186,9 @@ Where εeff is the effective dielectric constant accounting for substrate effect
 - Maximum gain in broadside direction
 - Typical gain: 3-5 dBi
 
-**Feed Impedance**: Frequency-dependent
-- Design targets 50Ω or 75Ω at center frequency
+**Feed Impedance**: 
+- **Archimedean**: Frequency-dependent, targets 50Ω or 75Ω at center frequency
+- **Log-Spiral**: Frequency-independent, constant impedance across wide bandwidth
 - May require matching network for optimal VSWR
 
 ## Material Selection Guide
@@ -264,10 +312,11 @@ Where εeff is the effective dielectric constant accounting for substrate effect
 
 ### Narrow Bandwidth
 
-**Problem**: Works only at one frequency
+**Problem**: Works only at one frequency (Archimedean spiral)
 
 **Solutions**:
-- Increase number of turns
+- Switch to Log-Spiral type for ultrawideband operation
+- Increase number of turns (Archimedean)
 - Verify material dielectric constant
 - Check substrate thickness
 - Consider tapered feed design
@@ -294,9 +343,10 @@ Where εeff is the effective dielectric constant accounting for substrate effect
 
 ## Examples
 
-### Example 1: 2.4 GHz WiFi Antenna
+### Example 1: 2.4 GHz WiFi Antenna (Archimedean)
 
 **Parameters**:
+- Antenna Type: Archimedean Spiral
 - Frequency: 2400 MHz
 - Material: Standard FR4
 - Board: 1.6mm
@@ -305,14 +355,15 @@ Where εeff is the effective dielectric constant accounting for substrate effect
 - Turns: 2
 
 **Results**:
-- Diameter: ~41mm
-- Board: 61×61mm
-- Bandwidth: 2.2-2.6 GHz
+- Diameter: ~49mm
+- Board: 69×69mm
+- Bandwidth: 2.2-2.6 GHz (±17%)
 - Application: WiFi, Bluetooth, Zigbee
 
-### Example 2: 5.8 GHz FPV Antenna
+### Example 2: 5.8 GHz FPV Antenna (Archimedean)
 
 **Parameters**:
+- Antenna Type: Archimedean Spiral
 - Frequency: 5800 MHz
 - Material: FR4 TG170 or RO4003C
 - Board: 0.8mm
@@ -326,9 +377,10 @@ Where εeff is the effective dielectric constant accounting for substrate effect
 - Bandwidth: 5.6-6.0 GHz
 - Application: FPV video, 5G
 
-### Example 3: 915 MHz ISM Antenna
+### Example 3: 915 MHz ISM Antenna (Archimedean)
 
 **Parameters**:
+- Antenna Type: Archimedean Spiral
 - Frequency: 915 MHz
 - Material: Standard FR4
 - Board: 1.6mm
@@ -341,6 +393,25 @@ Where εeff is the effective dielectric constant accounting for substrate effect
 - Board: 127×127mm
 - Bandwidth: 850-980 MHz
 - Application: LoRa, ISM band
+
+### Example 4: UWB Antenna 3-10 GHz (Log-Spiral)
+
+**Parameters**:
+- Antenna Type: Log-Spiral (Ultrawideband)
+- Frequency: 6000 MHz (center)
+- Material: RO4003C (recommended for UWB)
+- Board: 0.8mm
+- Copper: 0.5 oz
+- Impedance: 50Ω
+- Turns: 2
+
+**Results**:
+- Diameter: ~40mm
+- Board: 60×60mm
+- Bandwidth: 1247-28863 MHz (23:1 ratio!)
+- Application: UWB radar, UWB communications (IEEE 802.15.4a), EMC testing, multi-band systems
+
+**Note**: Log-spiral provides true ultrawideband coverage with frequency-independent characteristics.
 
 ## Technical References
 
