@@ -2,7 +2,7 @@
 title: Mylium
 email: info@mylium.eu
 description: >  # this means to ignore newlines until "baseurl:"
- FPGA solutions
+  FPGA engineering for new space, defence and dual-use projects.
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "https://www.mylium.eu" # the base hostname & protocol for your site
 
