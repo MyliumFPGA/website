@@ -1,0 +1,104 @@
+.eyebrow {
+    display: block;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+// Buttons
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.7rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    font: 600 0.95rem/1.2 var(--font-sans);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.btn--primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+    &:hover, &:focus { background: var(--accent-strong); color: var(--accent-ink); }
+}
+.btn--ghost {
+    background: transparent;
+    border-color: var(--control-line);
+    color: var(--text);
+    &:hover { border-color: var(--accent); color: var(--accent-strong); }
+}
+.btn--lg { min-height: 52px; padding: 0.85rem 1.75rem; font-size: 1rem; }
+.btn--sm { min-height: 40px; padding: 0.5rem 1rem; font-size: 0.875rem; }
+
+.link-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    &:hover { color: var(--accent); }
+}
+
+// Cards
+.grid {
+    display: grid;
+    gap: var(--gap);
+}
+@media (min-width: 720px) {
+    .grid--2 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 620px) {
+    .grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+    .grid--4 { grid-template-columns: repeat(4, 1fr); }
+}
+.card {
+    position: relative;
+    --card-pad: clamp(1.5rem, 3vw, 2.25rem);
+    padding: var(--card-pad);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    > p { color: var(--text-muted); }
+}
+
+.card__image {
+    display: block;
+    width: calc(100% + 2 * var(--card-pad));
+    max-width: none;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    margin: calc(-1 * var(--card-pad)) calc(-1 * var(--card-pad)) 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+// The icon sits on the lower edge of a photo
+.card__image + .card__icon {
+    position: relative;
+    margin-top: -24px;
+    background: var(--surface);
+}
+
+.card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--line-accent);
+    border-radius: var(--radius);
+    color: var(--accent);
+    background: rgba(79, 209, 197, 0.07);
+    .icon { width: 26px; height: 26px; }
+}

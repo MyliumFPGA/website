@@ -5,6 +5,7 @@ description: >  # this means to ignore newlines until "baseurl:"
  FPGA solutions
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "https://www.mylium.eu" # the base hostname & protocol for your site
+google_analytics: G-9GBTGG0QQR
 
 twitter_username:
 github_username:
@@ -21,3 +22,9 @@ exclude:
   - node_modules
   - vendor
   - .git
+  - .continue
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - LICENCE
+  - img/photos/CREDITS.md

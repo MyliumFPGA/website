@@ -1,41 +1,76 @@
+{%- capture page_title -%}
+  {%- if page.title -%}{{ page.title }} | {{ site.title }}{%- else -%}{{ site.title }} - FPGA Solutions{%- endif -%}
+{%- endcapture -%}
+{%- assign page_description = page.description | default: site.description | strip_newlines | strip -%}
 <head>
-
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
 
-    <title>Mylium  - FPGA Solutions</title>
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ page_description }}">
+    <meta name="author" content="{{ site.title }}">
+    <link rel="canonical" href="{{ page.url | absolute_url }}">
+    {% if page.noindex %}<meta name="robots" content="noindex">{% endif %}
 
-    <!-- Bootstrap Core CSS -->
-    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <!-- Open Graph / social previews -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ site.title }}">
+    <meta property="og:title" content="{{ page_title }}">
+    <meta property="og:description" content="{{ page_description }}">
+    <meta property="og:url" content="{{ page.url | absolute_url }}">
+    <meta property="og:image" content="{{ '/img/brand/og-image.png' | absolute_url }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
 
-    <!-- Custom Fonts -->
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic,900,900italic' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" type="text/css">
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="{{ '/img/brand/mark.svg' | relative_url }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ '/favicon-32x32.png' | relative_url }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ '/favicon-16x16.png' | relative_url }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ '/apple-touch-icon.png' | relative_url }}">
+    <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
+    <link rel="mask-icon" href="{{ '/safari-pinned-tab.svg' | relative_url }}" color="#4fd1c5">
+    <meta name="msapplication-config" content="{{ '/browserconfig.xml' | relative_url }}">
+    <meta name="theme-color" content="#0a0f1f">
 
-    <!-- Plugin CSS -->
-    <link rel="stylesheet" href="css/animate.min.css" type="text/css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/main.css" type="text/css">
+    <link rel="stylesheet" href="{{ '/css/main.css' | relative_url }}">
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    {% if site.google_analytics %}
+    <!-- Google Analytics with Consent Mode v2: nothing is stored until the visitor accepts -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied'
+        });
+        try {
+            if (localStorage.getItem('mylium-consent') === 'granted') {
+                gtag('consent', 'update', { analytics_storage: 'granted' });
+            }
+        } catch (e) {}
+        gtag('js', new Date());
+        gtag('config', '{{ site.google_analytics }}');
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"></script>
+    {% endif %}
 
-        <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-9GBTGG0QQR"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-9GBTGG0QQR');
-        </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "{{ site.title }}",
+        "url": "{{ site.url }}",
+        "logo": "{{ '/android-chrome-384x384.png' | absolute_url }}",
+        "email": "{{ site.email }}",
+        "description": "{{ site.description | strip_newlines | strip }}"
+    }
+    </script>
 </head>

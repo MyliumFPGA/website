@@ -1,0 +1,27 @@
+// Design tokens
+:root {
+    // Colour
+    --bg: #0a0f1f;
+    --bg-alt: #0e1528;
+    --surface: #131b31;
+    --text: #e8eef5;
+    --text-muted: #9aa9c6;
+    --accent: #4fd1c5;
+    --accent-strong: #74ded4;
+    --accent-ink: #07131a;
+    --line: rgba(148, 170, 210, 0.16);
+    --line-accent: rgba(79, 209, 197, 0.45);
+    --control-line: rgba(154, 169, 198, 0.55);
+
+    // Type
+    --font-sans: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Space Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+    --h1: clamp(2.25rem, calc(1.4rem + 2.6vw), 3.5rem);
+    --h2: clamp(1.75rem, calc(1.3rem + 1.6vw), 2.5rem);
+
+    // Space and shape
+    --section-space: clamp(4rem, calc(2.5rem + 5vw), 7rem);
+    --gap: 1.5rem;
+    --radius: 6px;
+    --nav-height: 72px;
+}
