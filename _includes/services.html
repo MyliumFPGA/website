@@ -8,7 +8,11 @@
         <div class="grid grid--4">
             {% for item in site.data.capabilities %}
             <article class="card capability reveal">
-                <img class="card__image" src="{{ '/img/photos/' | append: item.image | append: '.webp' | relative_url }}" alt="" width="800" height="534" loading="lazy">
+                {% assign photo = '/img/photos/' | append: item.image | relative_url %}
+                <img class="card__image" src="{{ photo }}.webp"
+                     srcset="{{ photo }}-560.webp 560w, {{ photo }}.webp 800w"
+                     sizes="(min-width: 1000px) 270px, (min-width: 620px) 50vw, 100vw"
+                     alt="" width="800" height="534" loading="lazy">
                 <div class="card__icon">{% include icon.html name=item.icon %}</div>
                 <h3>{{ item.title }}</h3>
                 <p>{{ item.summary }}</p>

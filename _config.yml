@@ -4,7 +4,7 @@ email: info@mylium.eu
 description: >  # this means to ignore newlines until "baseurl:"
  FPGA solutions
 baseurl: "" # the subpath of your site, e.g. /blog/
-url: "https://www.mylium.eu" # the base hostname & protocol for your site
+url: "https://mylium.eu" # the base hostname & protocol for your site
 google_analytics: G-9GBTGG0QQR
 
 twitter_username:
@@ -12,6 +12,8 @@ github_username:
 
 # Build settings
 markdown: kramdown
+sass:
+  style: compressed
 
 # Include tools directory
 include:

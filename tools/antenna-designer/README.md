@@ -453,7 +453,7 @@ Based on established antenna design principles and JLCPCB manufacturing capabili
 ## Support
 
 For issues, suggestions, or questions:
-- Visit: https://www.mylium.eu
+- Visit: https://mylium.eu
 - Email: info@mylium.eu
 
 ## Version History
