@@ -1,0 +1,9 @@
+{% if site.google_analytics %}
+<div class="consent" id="consent" role="region" aria-label="Cookie consent" hidden>
+    <p>We use Google Analytics cookies to understand how the site is used, only if you allow it. <a href="{{ '/privacy/' | relative_url }}">Privacy policy</a></p>
+    <div class="consent__actions">
+        <button type="button" class="btn btn--ghost btn--sm" data-consent="denied">Decline</button>
+        <button type="button" class="btn btn--ghost btn--sm" data-consent="granted">Accept</button>
+    </div>
+</div>
+{% endif %}

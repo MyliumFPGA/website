@@ -1,0 +1,19 @@
+- title: Digital Signal Processing
+  icon: signal
+  image: signal
+  summary: Real-time RF, DSP and sensor pipelines optimized for deterministic execution.
+
+- title: Secure Embedded Software
+  icon: code
+  image: software
+  summary: Hardened firmware architecture with verifiable behavior and maintainable code paths.
+
+- title: Trusted & Dual-Use
+  icon: shield
+  image: dual-use
+  summary: Sovereign, security-first IP aligned with defense and civil compliance needs.
+
+- title: Rapid Prototyping
+  icon: chip
+  image: prototyping
+  summary: From concept to hardware-in-the-loop with traceable engineering milestones.

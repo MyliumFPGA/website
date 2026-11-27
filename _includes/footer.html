@@ -1,0 +1,29 @@
+<footer class="footer">
+    <div class="container footer__grid">
+        <div class="footer__brand">
+            <img src="{{ '/img/brand/logo-stacked-light.svg' | relative_url }}" alt="Mylium" width="96" height="85">
+        </div>
+        <div>
+            <h2 class="footer__title">Menu</h2>
+            <ul>
+                <li><a href="{{ '/' | relative_url }}#capabilities">Capabilities</a></li>
+                <li><a href="{{ '/' | relative_url }}#contact">Contact</a></li>
+            </ul>
+        </div>
+        <div>
+            <h2 class="footer__title">Contact</h2>
+            <ul>
+                <li><a href="mailto:{{ site.email }}">{{ site.email }}</a></li>
+                {% if site.company_address %}<li>{{ site.company_address }}</li>{% endif %}
+                {% if site.company_ids %}<li>{{ site.company_ids }}</li>{% endif %}
+            </ul>
+        </div>
+    </div>
+    <div class="container footer__bottom">
+        <span>&copy; {{ site.time | date: "%Y" }} {{ site.company_name | default: site.title }}</span>
+        <span class="footer__legal">
+            <a href="{{ '/privacy/' | relative_url }}">Privacy policy</a>
+            {% if site.google_analytics %}<button type="button" class="link-button" data-consent-open>Cookie settings</button>{% endif %}
+        </span>
+    </div>
+</footer>
