@@ -107,11 +107,31 @@ body:not(.front) .nav { background: rgba(10, 15, 31, 0.94); border-color: var(--
     min-height: 82vh;
     padding: calc(var(--nav-height) + 3rem) 0 4rem;
     border-bottom: 1px solid var(--line);
-    background:
-        linear-gradient(180deg, rgba(10, 15, 31, 0.72) 0%, rgba(10, 15, 31, 0.92) 100%),
-        url('../img/bg/hero.jpg') center / cover no-repeat;
     text-align: center;
 }
+// Background photos are <img> elements so they can be prioritised, resized and lazy-loaded.
+// A gradient on ::after darkens them behind the text.
+.hero,
+#contact {
+    position: relative;
+    isolation: isolate;
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+    }
+}
+.hero__bg,
+.contact__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.hero::after { background: linear-gradient(180deg, rgba(10, 15, 31, 0.72) 0%, rgba(10, 15, 31, 0.92) 100%); }
 .hero__copy { max-width: 960px; }
 .hero__logo {
     display: block;
@@ -162,10 +182,10 @@ body:not(.front) .nav { background: rgba(10, 15, 31, 0.94); border-color: var(--
 // Contact
 #contact {
     padding: calc(var(--section-space) * 1.5) 0;
-    background:
-        radial-gradient(ellipse at center 60%, rgba(10, 15, 31, 0.55) 0%, rgba(10, 15, 31, 0.2) 50%, rgba(10, 15, 31, 0) 75%),
-        #000 url('../img/photos/horizon.webp') center top / cover no-repeat;
+    background: #000;
+    &::after { background: radial-gradient(ellipse at center 60%, rgba(10, 15, 31, 0.55) 0%, rgba(10, 15, 31, 0.2) 50%, rgba(10, 15, 31, 0) 75%); }
 }
+.contact__bg { object-position: center top; }
 .contact {
     max-width: 48rem;
     text-align: center;

@@ -33,12 +33,10 @@
     <meta name="msapplication-config" content="{{ '/browserconfig.xml' | relative_url }}">
     <meta name="theme-color" content="#0a0f1f">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="{{ '/css/main.css' | relative_url }}">
+    <!-- Fonts are self-hosted; the stylesheet is inlined so nothing blocks rendering -->
+    <link rel="preload" href="{{ '/fonts/instrument-sans-latin.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
+    {% capture styles %}{% include main.scss %}{% endcapture %}
+    <style>{{ styles | scssify }}</style>
 
     {% if site.google_analytics %}
     <!-- Google Analytics with Consent Mode v2: nothing is stored until the visitor accepts -->
@@ -58,8 +56,15 @@
         } catch (e) {}
         gtag('js', new Date());
         gtag('config', '{{ site.google_analytics }}');
+
+        // Fetch the tag only after the page has loaded, so it does not compete with content
+        window.addEventListener('load', function () {
+            var tag = document.createElement('script');
+            tag.async = true;
+            tag.src = 'https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}';
+            document.head.appendChild(tag);
+        });
     </script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"></script>
     {% endif %}
 
     <script type="application/ld+json">
